@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "move_symbol"
+version = "0.0.1"
+dependencies = [
+    "libcst >= 0.3.0",
+    "click",
+]
+
+[tool.setuptools.packages.find]
+where = ["move_symbol"]
+include = ["*"]
+exclude = ["*_test.py"]
