@@ -145,7 +145,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
     ) -> Union[
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
-        if original_node.name in self.symbols_to_remove:
+        if original_node.name.value in self.symbols_to_remove:
             self._removed.add(original_node)
             return cst.RemoveFromParent()
         return super().leave_FunctionDef(original_node, updated_node)
@@ -155,7 +155,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
     ) -> Union[
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
-        if original_node.name in self.symbols_to_remove:
+        if original_node.name.value in self.symbols_to_remove:
             self._removed.add(original_node)
             return cst.RemoveFromParent()
         return super().leave_ClassDef(original_node, updated_node)
@@ -190,6 +190,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
     def leave_Module(
         self, original_node: cst.Module, updated_node: cst.Module
     ) -> cst.Module:
+        self._collect_associated_imports(self._removed)
         return super().leave_Module(original_node, updated_node)
 
 
@@ -222,9 +223,6 @@ class AddSymbolsVisitor(VisitorBasedCodemodCommand):
 @click.argument("old_qualified_symbol_names", type=click.STRING)
 @click.argument("new_qualified_symbol_names", type=click.STRING)
 def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> None:
-    old_symbols = [
-        Symbol.from_qualified_name(s) for s in old_qualified_symbol_names.split(",")
-    ]
     old_symbols = [
         Symbol.from_qualified_name(s) for s in old_qualified_symbol_names.split(",")
     ]
