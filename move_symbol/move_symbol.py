@@ -17,9 +17,7 @@ import click
 import libcst as cst
 from libcst.codemod._command import VisitorBasedCodemodCommand
 from libcst.codemod._context import CodemodContext
-from libcst.codemod._visitor import ContextAwareTransformer
 from libcst.codemod.visitors import AddImportsVisitor, RemoveImportsVisitor
-import libcst.matchers as m
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 from libcst.metadata.scope_provider import (
