@@ -61,10 +61,10 @@ def codemod_old_exports_to_new_exports(
 
     regexes = (
         # absolute import - e.g. `from a.b.c`
-        f"^from {old_module}",
+        f"^\s*from {old_module}",
         # relative import - e.g. `from .c` or `from ..b` or `from ...a`
         *[
-            f"^from \\.{i}{part}"
+            f"^\s*from \\.{i}{part}"
             for i, part in enumerate(reversed(old_module.split(".")), start=1)
         ],
     )
