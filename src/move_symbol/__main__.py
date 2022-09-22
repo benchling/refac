@@ -22,13 +22,15 @@ def main(ctx: click.Context, src: str, dst: str) -> None:
     if src == dst:
         return
 
-    if Path(src).is_file():
-        assert dst.endswith(".py"), "dst must end with '.py'"
-        if not Path(dst).is_file():
-            move_file(Path(src), Path(dst), include_strings=True)
-        # else:
-        # collect symbols
-        # move all symbols
+    if Path(src).is_file() and Path(dst).is_file():
+        pass
+        #   collect symbols
+        #   move all symbols]
+    elif Path(src).is_file() and not Path(dst).is_file():
+        assert dst.endswith(".py"), "dst must end with '.py' if src is file."
+        move_file(Path(src), Path(dst), include_strings=True)
+    else:
+        move_symbol(src, dst)
 
     #     src_file = src
     # else:

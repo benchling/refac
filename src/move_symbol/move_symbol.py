@@ -10,7 +10,10 @@ Usage:
 
 from dataclasses import dataclass
 from functools import cache
-import pathlib
+from pathlib import Path
+import subprocess
+import symbol
+import sys
 from typing import Iterable, Optional, Union
 
 import click
@@ -25,7 +28,7 @@ from libcst.metadata.scope_provider import (
     QualifiedNameSource,
 )
 
-AURELIA_ROOT = pathlib.Path("/src")
+AURELIA_ROOT = Path("/src")
 
 
 POSSIBLE_REMOVED_IMPORTS: set["AddImport"] = set()
@@ -235,16 +238,19 @@ def move_symbol(
         len(old_modules) == 1
     ), f"Old symbols must all be in the same module. Found: {old_modules}"
     assert (
-        len(old_modules) == 1
-    ), f"Old symbols must all be in the same module. Found: {old_modules}"
-    assert (
         len(new_modules) == 1
-    ), f"New symbols in the same module. Found: {new_modules}"
+    ), f"New symbols must all be in the same module. Found: {new_modules}"
     old_module = old_modules.pop()
     new_module = new_modules.pop()
 
     old_file = _to_file(old_module)
     new_file = _to_file(new_module)
+
+    assert Path(old_file).is_file(), f"File {old_file} does not exist"
+    if not Path(new_file).exists():
+        Path(new_file).parent.mkdir(parents=True, exist_ok=True)
+        Path(new_file).touch()
+    assert Path(new_file).is_file(), f"File {new_file} does not exist"
 
     manager = FullRepoManager(
         str(AURELIA_ROOT), [old_file, new_file], [FullyQualifiedNameProvider]
@@ -270,7 +276,7 @@ def move_symbol(
 
     remove_visitor = RemoveSymbolsVisitor(old_context, {s.name for s in old_symbols})
     updated_old_tree = remove_visitor.transform_module(old_context.module)
-    pathlib.Path(old_file).write_text(updated_old_tree.code)
+    Path(old_file).write_text(updated_old_tree.code)
 
     removed = remove_visitor.context.scratch[RemoveSymbolsVisitor.CONTEXT_KEY]
     nodes_to_add = removed["nodes"]
@@ -278,7 +284,44 @@ def move_symbol(
 
     add_visitor = AddSymbolsVisitor(new_context, nodes_to_add, imports_to_add)
     updated_new_tree = add_visitor.transform_module(new_context.module)
-    pathlib.Path(new_file).write_text(updated_new_tree.code)
+    Path(new_file).write_text(updated_new_tree.code)
+
+
+def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> None:
+    """Execute ReplaceCodemod to renamed old exports to new exports.
+
+    For performance, we only apply the codemod to Python files that contain any of the old symbols
+    """
+
+    regexes = (
+        # absolute import - e.g. `from a.b.c`
+        f"^\s*from {old_module}",
+        # relative import - e.g. `from .c` or `from ..b` or `from ...a`
+        *[
+            f"^\s*from \.{{{i}}}{part}"
+            for i, part in enumerate(reversed(old_module.split(".")), start=1)
+        ],
+    )
+    symbols = [
+        symbol
+        for old_symbol in old_symbols.split(",")
+        for _module, symbol in old_symbol.rsplit(".", 1)
+    ]
+    combined = "(" + "|".join(symbols) + ")"
+
+    grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(AURELIA_ROOT)} | grep -E '\.py$'"
+    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={old_symbols} --new={new_symbols}"
+    command = f"{grep_for_filenames_command} | xargs {codemod_command}"
+    print(command)
+
+    subprocess.run(
+        command,
+        shell=True,
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        cwd=AURELIA_ROOT,
+    )
 
 
 @click.command()
@@ -286,6 +329,9 @@ def move_symbol(
 @click.argument("new_qualified_symbol_names", type=click.STRING)
 def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> None:
     move_symbol(old_qualified_symbol_names, new_qualified_symbol_names)
+    codemod_old_exports_to_new_exports(
+        old_qualified_symbol_names, new_qualified_symbol_names
+    )
 
 
 if __name__ == "__main__":
