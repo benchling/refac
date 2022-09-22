@@ -64,7 +64,7 @@ def codemod_old_exports_to_new_exports(
         f"^\s*from {old_module}",
         # relative import - e.g. `from .c` or `from ..b` or `from ...a`
         *[
-            f"^\s*from \\.{i}{part}"
+            f"^\s*from \.{{{i}}}{part}"
             for i, part in enumerate(reversed(old_module.split(".")), start=1)
         ],
     )
