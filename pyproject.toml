@@ -1,16 +1,30 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "move_symbol"
-version = "0.0.1"
+description = "Move Python symbols and autofix imports. Powered by libcst."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["python", "refactor", "codemod", "move", "symbol" "move_symbol", "move-symbol"]
+classifiers = [
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3",
+]
 dependencies = [
-    "libcst >= 0.3.0",
+    "libcst",
     "click",
 ]
+dynamic = ["version"]
+
+[project.scripts]
+my-script = "move_symbol.__main__"
 
 [tool.setuptools.packages.find]
 where = ["move_symbol"]
 include = ["*"]
 exclude = ["*_test.py"]
+
+[tool.setuptools.dynamic]
+version = {attr = "move_symbol.VERSION"}
