@@ -22,31 +22,35 @@ def main(ctx: click.Context, src: str, dst: str) -> None:
     if src == dst:
         return
 
-    src_file, src_symbol = None, None
-    dst_file, dst_symbol = None, None
-
     if Path(src).is_file():
-        src_file = src
-    else:
-        src_file, src_symbol = src.rsplit(".", 1)
-        assert Path(src_file).is_file(), f"Cannot find source file from {src}."
+        assert dst.endswith(".py"), "dst must end with '.py'"
+        if not Path(dst).is_file():
+            move_file(Path(src), Path(dst), include_strings=True)
+        # else:
+        # collect symbols
+        # move all symbols
 
-    if Path(dst).is_file():
-        dst_file = dst
-    else:
-        dst_file, dst_symbol = dst.rsplit(".", 1)
-        assert Path(dst_file).is_file(), f"Cannot find source file from {dst}."
+    #     src_file = src
+    # else:
+    #     src_file, src_symbol = src.rsplit(".", 1)
+    #     assert Path(src_file).is_file(), f"Cannot find source file from {src}."
 
-    if src_symbol is None:
-        assert dst_symbol is None, f"Cannot move file {src} to symbol {dst}."
+    # if Path(dst).is_file():
+    #     dst_file = dst
+    # else:
+    #     dst_file, dst_symbol = dst.rsplit(".", 1)
+    #     assert Path(dst_file).is_file(), f"Cannot find source file from {dst}."
 
-    if src_symbol is not None:
-        if dst_symbol is None:
-            dst_symbol = src_symbol
+    # if src_symbol is None:
+    #     assert dst_symbol is None, f"Cannot move file {src} to symbol {dst}."
 
-    if src_symbol is None and dst_symbol is None:
-        move_file(src_file, dst_file, include_strings=False)
-    else:
-        move_symbol(src_symbol, dst_symbol)
+    # if src_symbol is not None:
+    #     if dst_symbol is None:
+    #         dst_symbol = src_symbol
+
+    # if src_symbol is None and dst_symbol is None:
+    # else:
+    #     move_symbol(src_symbol, dst_symbol)
+
 
 main()
