@@ -293,15 +293,6 @@ def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> No
     For performance, we only apply the codemod to Python files that contain any of the old symbols
     """
 
-    regexes = (
-        # absolute import - e.g. `from a.b.c`
-        f"^\s*from {old_module}",
-        # relative import - e.g. `from .c` or `from ..b` or `from ...a`
-        *[
-            f"^\s*from \.{{{i}}}{part}"
-            for i, part in enumerate(reversed(old_module.split(".")), start=1)
-        ],
-    )
     symbols = [
         symbol
         for old_symbol in old_symbols.split(",")
