@@ -286,6 +286,10 @@ def move_symbol(
     updated_new_tree = add_visitor.transform_module(new_context.module)
     Path(new_file).write_text(updated_new_tree.code)
 
+    codemod_old_exports_to_new_exports(
+        old_qualified_symbol_names, new_qualified_symbol_names
+    )
+
 
 def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> None:
     """Execute ReplaceCodemod to renamed old exports to new exports.
@@ -293,11 +297,7 @@ def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> No
     For performance, we only apply the codemod to Python files that contain any of the old symbols
     """
 
-    symbols = [
-        symbol
-        for old_symbol in old_symbols.split(",")
-        for _module, symbol in old_symbol.rsplit(".", 1)
-    ]
+    symbols = [old_symbol.rsplit(".", 1)[1] for old_symbol in old_symbols.split(",")]
     combined = "(" + "|".join(symbols) + ")"
 
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(AURELIA_ROOT)} | grep -E '\.py$'"
@@ -320,9 +320,6 @@ def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> No
 @click.argument("new_qualified_symbol_names", type=click.STRING)
 def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> None:
     move_symbol(old_qualified_symbol_names, new_qualified_symbol_names)
-    codemod_old_exports_to_new_exports(
-        old_qualified_symbol_names, new_qualified_symbol_names
-    )
 
 
 if __name__ == "__main__":
