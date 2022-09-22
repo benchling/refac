@@ -125,11 +125,7 @@ def move(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
         shutil.rmtree(old_path)
 
 
-@click.command()
-@click.argument("old_path", type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument("new_path", type=click.Path(exists=False, path_type=pathlib.Path))
-@click.option("--include-strings", type=click.BOOL, default=False)
-def main(
+def move_file(
     old_path: pathlib.Path, new_path: pathlib.Path, include_strings: bool = False
 ) -> None:
     validate(old_path, new_path)
@@ -139,6 +135,16 @@ def main(
         codemod_old_strings_to_new_strings(old_path, new_path)
 
     move(old_path, new_path)
+
+
+@click.command()
+@click.argument("old_path", type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument("new_path", type=click.Path(exists=False, path_type=pathlib.Path))
+@click.option("--include-strings", type=click.BOOL, default=False)
+def main(
+    old_path: pathlib.Path, new_path: pathlib.Path, include_strings: bool = False
+) -> None:
+    move_file(old_path, new_path, include_strings)
 
 
 if __name__ == "__main__":

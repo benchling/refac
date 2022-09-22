@@ -217,10 +217,9 @@ class AddSymbolsVisitor(VisitorBasedCodemodCommand):
         )
 
 
-@click.command()
-@click.argument("old_qualified_symbol_names", type=click.STRING)
-@click.argument("new_qualified_symbol_names", type=click.STRING)
-def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> None:
+def move_symbol(
+    old_qualified_symbol_names: str, new_qualified_symbol_names: str
+) -> None:
     old_symbols = [
         Symbol.from_qualified_name(s) for s in old_qualified_symbol_names.split(",")
     ]
@@ -280,6 +279,13 @@ def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> No
     add_visitor = AddSymbolsVisitor(new_context, nodes_to_add, imports_to_add)
     updated_new_tree = add_visitor.transform_module(new_context.module)
     pathlib.Path(new_file).write_text(updated_new_tree.code)
+
+
+@click.command()
+@click.argument("old_qualified_symbol_names", type=click.STRING)
+@click.argument("new_qualified_symbol_names", type=click.STRING)
+def main(old_qualified_symbol_names: str, new_qualified_symbol_names: str) -> None:
+    move_symbol(old_qualified_symbol_names, new_qualified_symbol_names)
 
 
 if __name__ == "__main__":
