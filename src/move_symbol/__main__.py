@@ -22,37 +22,10 @@ def main(ctx: click.Context, src: str, dst: str) -> None:
     if src == dst:
         return
 
-    if Path(src).is_file() and Path(dst).is_file():
-        pass
-        #   collect symbols
-        #   move all symbols]
-    elif Path(src).is_file() and not Path(dst).is_file():
-        assert dst.endswith(".py"), "dst must end with '.py' if src is file."
+    if Path(src).is_file():
         move_file(Path(src), Path(dst), include_strings=True)
     else:
         move_symbol(src, dst)
-
-    #     src_file = src
-    # else:
-    #     src_file, src_symbol = src.rsplit(".", 1)
-    #     assert Path(src_file).is_file(), f"Cannot find source file from {src}."
-
-    # if Path(dst).is_file():
-    #     dst_file = dst
-    # else:
-    #     dst_file, dst_symbol = dst.rsplit(".", 1)
-    #     assert Path(dst_file).is_file(), f"Cannot find source file from {dst}."
-
-    # if src_symbol is None:
-    #     assert dst_symbol is None, f"Cannot move file {src} to symbol {dst}."
-
-    # if src_symbol is not None:
-    #     if dst_symbol is None:
-    #         dst_symbol = src_symbol
-
-    # if src_symbol is None and dst_symbol is None:
-    # else:
-    #     move_symbol(src_symbol, dst_symbol)
 
 
 main()

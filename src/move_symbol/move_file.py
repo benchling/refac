@@ -119,6 +119,7 @@ def move(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
         new_path.parent.mkdir(parents=True, exist_ok=True)
         new_path.write_text(new_contents)
         old_path.unlink()
+        # TODO: May need to remove some imports from the new file if they point to self.
     elif old_path.is_dir() and (not new_path.exists() or new_path.is_dir()):
         # May overwrite files in the new directory if they have the same name as files in the old directory.
         shutil.copytree(old_path, new_path, dirs_exist_ok=True)
@@ -129,12 +130,11 @@ def move_file(
     old_path: pathlib.Path, new_path: pathlib.Path, include_strings: bool = False
 ) -> None:
     validate(old_path, new_path)
+    move(old_path, new_path)
     codemod_old_exports_to_new_exports(old_path, new_path)
 
     if include_strings:
         codemod_old_strings_to_new_strings(old_path, new_path)
-
-    move(old_path, new_path)
 
 
 @click.command()
