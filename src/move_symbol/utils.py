@@ -12,7 +12,7 @@ def shell(command: str, **kwargs) -> subprocess.CompletedProcess:
 
     >>> shell("echo hello")
     """
-    print(f"Running: {command!r}", fg="green")
+    print(f"Running: {command!r}")
     return subprocess.run(
         command,
         shell=True,
