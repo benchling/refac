@@ -8,17 +8,8 @@ from .move_symbol import move_symbol
 @click.command()
 @click.argument("src", type=click.STRING)
 @click.argument("dst", type=click.STRING)
-@click.pass_context
-def main(ctx: click.Context, src: str, dst: str) -> None:
-    """Move modules and symbols with libcst codemods.
-
-    TODO: Figure out how to install this package
-    TODO: Figure out how to install this package
-    TODO: Figure out how to install this package
-    TODO: Figure out how to install this package
-    TODO: Figure out how to install this package
-    TODO: Support multiple srcs and dsts.
-    """
+def main(src: str, dst: str) -> None:
+    """Move symbols with libcst codemods."""
     if src == dst:
         return
 

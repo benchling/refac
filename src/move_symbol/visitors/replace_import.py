@@ -14,7 +14,7 @@ from libcst.metadata import Assignment, ScopeProvider
 from libcst.metadata.scope_provider import QualifiedNameSource, Scope
 
 from .import_utils import Import
-from .inplace_replace import InplaceReplaceImportVisitor
+from .inplace_replace_import import InplaceReplaceImportVisitor
 
 # Possible refactors:
 #  - Add a AddCommentVisitor
