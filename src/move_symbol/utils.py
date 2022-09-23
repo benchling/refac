@@ -42,8 +42,8 @@ def to_module(path: pathlib.Path) -> str:
 def to_file(module: str) -> str:
     """Convert a Python module to a Python filename.
 
-    >>> to_file("benchling.notebook.models.entry")
-    Path('benchling.notebook.models.entry.py')
+    >>> to_file("src.models.user")
+    src/models/user.py
     """
     filename = module.replace(".", "/") + ".py"
     return filename
