@@ -12,6 +12,7 @@ Potential bugs:
 """
 
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -89,17 +90,33 @@ def codemod_old_strings_to_new_strings(
     old_path: pathlib.Path,
     new_path: pathlib.Path,
 ) -> None:
-    old_string = old_path.resolve().relative_to(AURELIA_ROOT)
-    new_string = new_path.resolve().relative_to(AURELIA_ROOT)
+    old_filename = old_path.resolve().relative_to(AURELIA_ROOT)
+    new_filename = new_path.resolve().relative_to(AURELIA_ROOT)
+    old_module = _to_module(old_path)
+    new_module = _to_module(new_path)
 
     sed = "sed -i" if sys.platform == "linux" else "sed -i '' -e"
     command = (
-        f"git grep --files-with-matches '{old_string}' | xargs {sed} 's/{old_string}/{new_string}/g'",
+        f"git grep --files-with-matches '{old_filename}' | xargs {sed} 's/{re.escape(old_filename)}/{re.escape(new_filename)}/g'",
     )
     print(command)
 
     subprocess.run(
         command,
+        shell=True,
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        cwd=AURELIA_ROOT,
+    )
+
+    command2 = (
+        f"git grep --files-with-matches '{old_module}' | xargs {sed} 's/{re.escape(old_module)}/{re.escape(new_module)}/g'",
+    )
+    print(command2)
+
+    subprocess.run(
+        command2,
         shell=True,
         stdin=sys.stdin,
         stdout=sys.stdout,
@@ -137,7 +154,7 @@ def move_file(
         # 1. TODO: FIX CODEMOD TO  ESCAPE '/' STRINGS.
         # 2. TODO: FIX CODEMOD TO ALSO DO MODULES.
         # 3. TODO: Add string renaming to move_symbol.
-        
+
         codemod_old_strings_to_new_strings(old_path, new_path)
 
 
