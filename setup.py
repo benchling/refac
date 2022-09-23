@@ -18,7 +18,7 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-INSTALL_REQUIRES = ["click", "libcst"]
+INSTALL_REQUIRES = ["libcst"]
 
 ###################################################################
 

@@ -1,4 +1,3 @@
-import click
 import os
 import pathlib
 import subprocess
@@ -13,7 +12,7 @@ def shell(command: str, **kwargs) -> subprocess.CompletedProcess:
 
     >>> shell("echo hello")
     """
-    click.secho(f"Running: {command!r}", fg="green")
+    print(f"Running: {command!r}", fg="green")
     return subprocess.run(
         command,
         shell=True,
