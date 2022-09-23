@@ -134,6 +134,10 @@ def move_file(
     codemod_old_exports_to_new_exports(old_path, new_path)
 
     if include_strings:
+        # 1. TODO: FIX CODEMOD TO  ESCAPE '/' STRINGS.
+        # 2. TODO: FIX CODEMOD TO ALSO DO MODULES.
+        # 3. TODO: Add string renaming to move_symbol.
+        
         codemod_old_strings_to_new_strings(old_path, new_path)
 
 
