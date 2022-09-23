@@ -3,7 +3,7 @@ import unittest
 from libcst import parse_statement
 from libcst.codemod import CodemodContext
 
-from . import import_utils
+from move_symbol import import_utils
 
 
 class ImportUtilsTest(unittest.TestCase):

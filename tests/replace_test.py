@@ -2,7 +2,7 @@ from typing import Any
 
 from libcst.codemod import CodemodContext, CodemodTest
 
-from .replace import ReplaceCodemod
+from ..src.move_symbol.replace import ReplaceCodemod
 
 
 class ReplaceCodemodTest(CodemodTest):
