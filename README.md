@@ -1,5 +1,4 @@
 # move-symbol
-
 A tool for moving and refactoring python code.
 
 ## Quickstart
