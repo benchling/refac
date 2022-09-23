@@ -2,7 +2,7 @@ from typing import Any
 
 from libcst.codemod import CodemodContext, CodemodTest
 
-from ..src.move_symbol.visitors.replace_import import ReplaceCodemod
+from move_symbol.visitors.replace_import import ReplaceCodemod
 
 
 class ReplaceCodemodTest(CodemodTest):
@@ -36,7 +36,7 @@ class ReplaceCodemodTest(CodemodTest):
 class TestOnlyImportCases(ReplaceCodemodTest):
     TRANSFORM = ReplaceCodemod
 
-    def test_import_only(self, before_after, old_new):
+    def test_import_only(self):
         for (before_after, old_new) in (
             # `import a`
             (("import a as x", "import x"), ("a", "x")),
@@ -81,7 +81,7 @@ class TestOnlyImportCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_importfrom_only(self, before_after, old_new):
+    def test_importfrom_only(self):
         for (before_after, old_new) in (
             # `from a import b`
             (("from a import b as x", "import x"), ("a.b", "x")),
@@ -119,7 +119,7 @@ class TestOnlyImportCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_relative_importfrom_only(self, before_after, old_new):
+    def test_relative_importfrom_only(self):
         for (before_after, old_new) in (
             # `from . import b`
             (("from . import b as x", "import x"), ("a.b", "x")),
@@ -166,7 +166,7 @@ class TestOnlyImportCases(ReplaceCodemodTest):
 class TestImportNameCases(ReplaceCodemodTest):
     TRANSFORM = ReplaceCodemod
 
-    def test_import_name_usage(self, before_after, old_new):
+    def test_import_name_usage(self):
         for (before_after, old_new) in (
             # `import a`
             (("import a as x\nx", "import x\nx"), ("a", "x")),
@@ -193,7 +193,7 @@ class TestImportNameCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_importfrom_name_usage(self, before_after, old_new):
+    def test_importfrom_name_usage(self):
         for (before_after, old_new) in (
             # `from a import b`
             (("from a import b as x\nx", "from x import b as x\nx"), ("a", "x")),
@@ -229,7 +229,7 @@ class TestImportNameCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_relative_importfrom_name_usage(self, before_after, old_new):
+    def test_relative_importfrom_name_usage(self):
         for (before_after, old_new) in (
             # `from a import b`
             (("from . import b as y\ny", "from x import b as y\ny"), ("a", "x")),
@@ -275,7 +275,7 @@ class TestImportNameCases(ReplaceCodemodTest):
 class TestImportAttributeCases(ReplaceCodemodTest):
     TRANSFORM = ReplaceCodemod
 
-    def test_import_attribute_usage(self, before_after, old_new):
+    def test_import_attribute_usage(self):
         for (before_after, old_new) in (
             # `import a`
             (("import a\na.zz", "import a\na.zz"), ("a", "a")),
@@ -375,7 +375,7 @@ class TestImportAttributeCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_importfrom_attribute_usage(self, before_after, old_new):
+    def test_importfrom_attribute_usage(self):
         for (before_after, old_new) in (
             # `from a import b`
             (("from a import b\nb.zz", "from a import b\nb.zz"), ("a.b", "a.b")),
@@ -440,7 +440,7 @@ class TestImportAttributeCases(ReplaceCodemodTest):
             old, new = old_new
             self.assertCodemod(before, after, old=old, new=new)
 
-    def test_relative_importfrom_attribute_usage(self, before_after, old_new):
+    def test_relative_importfrom_attribute_usage(self):
         for (before_after, old_new) in (
             # `from a import b`
             (("from . import b\nb.zz", "from . import b\nb.zz"), ("a.b", "a.b")),
