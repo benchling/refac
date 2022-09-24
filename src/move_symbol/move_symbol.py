@@ -1,61 +1,45 @@
-#!/usr/bin/env python
-
 """
-Move Python symbol to a different location
-
-Usage:
->> python move_symbol/move_symbol.py OLD_SYMBOL NEW_SYMBOL
-
+Move Python symbol and fix all imports.
 """
 
-from dataclasses import dataclass
 from pathlib import Path
-import subprocess
-import sys
+from typing import Set, Tuple
 
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
-from move_symbol.utils import ROOT_DIR, to_file
+from move_symbol.utils import ROOT_DIR, shell, to_file
 from move_symbol.visitors.add_symbols import AddSymbolsVisitor
 from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
 
 
-@dataclass
-class Symbol:
-    module: str
-    name: str
+def validate(srcs: str, dsts: str) -> Tuple[str, Set[str], str, Set[str]]:
+    """Validate that all imports are valid and that all symbols are defined"""
+    old_full_symbols = srcs.split(",")
+    new_full_symbols = dsts.split(",")
 
-    @classmethod
-    def from_qualified_name(cls, s: str) -> "Symbol":
-        assert "." in s, "Qualified symbol name must be of the form module.name"
-        module, name = s.rsplit(".", 1)
-        return cls(module, name)
+    assert len(old_full_symbols) == len(new_full_symbols), (
+        "Must specify the same number of old and new symbols",
+    )
 
-
-def move_symbol(
-    old_qualified_symbol_names: str, new_qualified_symbol_names: str
-) -> None:
-    old_symbols = [
-        Symbol.from_qualified_name(s) for s in old_qualified_symbol_names.split(",")
-    ]
-    new_symbols = [
-        Symbol.from_qualified_name(s) for s in new_qualified_symbol_names.split(",")
-    ]
-    assert len(old_symbols) == len(
-        new_symbols
-    ), "Must specify the same number of old and new symbols"
-    old_modules = set(s.module for s in old_symbols)
-    new_modules = set(s.module for s in new_symbols)
-    assert (
-        len(old_modules) == 1
-    ), f"Old symbols must all be in the same module. Found: {old_modules}"
-    assert (
-        len(new_modules) == 1
-    ), f"New symbols must all be in the same module. Found: {new_modules}"
+    old_modules = set(s.rsplit(".", 1)[0] for s in old_full_symbols)
+    new_modules = set(s.rsplit(".", 1)[0] for s in new_full_symbols)
+    assert len(old_modules) == 1, (
+        f"Old symbols must all be in the same module. Found: {old_modules}",
+    )
+    assert len(new_modules) == 1, (
+        f"New symbols must all be in the same module. Found: {new_modules}",
+    )
     old_module = old_modules.pop()
     new_module = new_modules.pop()
+
+    old_symbols = set(s.rsplit(".", 1)[1] for s in old_full_symbols)
+    new_symbols = set(s.rsplit(".", 1)[1] for s in new_full_symbols)
+    # TODO: Allow renaming symbols.
+    assert old_symbols == new_symbols, (
+        f"Old symbols names must match new symbol names. {old_symbols} != {new_symbols}",
+    )
 
     old_file = to_file(old_module)
     new_file = to_file(new_module)
@@ -64,7 +48,14 @@ def move_symbol(
     if not Path(new_file).exists():
         Path(new_file).parent.mkdir(parents=True, exist_ok=True)
         Path(new_file).touch()
-    assert Path(new_file).is_file(), f"File {new_file} does not exist"
+
+    return (old_module, old_symbols, new_module, new_symbols)
+
+
+def move(srcs: str, dsts: str) -> None:
+    (old_module, old_symbols, new_module, _new_symbols) = validate(srcs, dsts)
+    old_file = to_file(old_module)
+    new_file = to_file(new_module)
 
     manager = FullRepoManager(
         str(ROOT_DIR), [old_file, new_file], [FullyQualifiedNameProvider]
@@ -88,7 +79,7 @@ def move_symbol(
         metadata_manager=manager,
     )
 
-    remove_visitor = RemoveSymbolsVisitor(old_context, {s.name for s in old_symbols})
+    remove_visitor = RemoveSymbolsVisitor(old_context, old_symbols)
     assert old_context.module, "Module must be defined"
     updated_old_tree = remove_visitor.transform_module(old_context.module)
     Path(old_file).write_text(updated_old_tree.code)
@@ -101,10 +92,6 @@ def move_symbol(
     assert new_context.module, "Module must be defined"
     updated_new_tree = add_visitor.transform_module(new_context.module)
     Path(new_file).write_text(updated_new_tree.code)
-
-    codemod_old_exports_to_new_exports(
-        old_qualified_symbol_names, new_qualified_symbol_names
-    )
 
 
 def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> None:
@@ -119,13 +106,9 @@ def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> No
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '\.py$'"
     codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={old_symbols} --new={new_symbols}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
-    print(command)
+    shell(command)
 
-    subprocess.run(
-        command,
-        shell=True,
-        stdin=sys.stdin,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        cwd=ROOT_DIR,
-    )
+
+def move_symbol(srcs: str, dsts: str) -> None:
+    move(srcs, dsts)
+    codemod_old_exports_to_new_exports(srcs, dsts)

@@ -1,10 +1,5 @@
-#!/usr/bin/env python
-
 """
 Move Python file and fix all imports.
-
-Usage:
->> python scripts/dev/libcst_codemods/move_file.py OLD_FILE NEW_FILE
 
 Potential bugs:
  - Moving file with relative imports.
@@ -79,6 +74,7 @@ def move(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
 def move_file(
     old_path: pathlib.Path, new_path: pathlib.Path, include_strings: bool = False
 ) -> None:
+    # TODO: Support moving multiple files?
     validate(old_path, new_path)
     move(old_path, new_path)
     codemod_old_exports_to_new_exports(old_path, new_path)
