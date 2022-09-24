@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-ROOT_DIR = os.environ.get("ROOT_DIR", ".")
+ROOT_DIR = pathlib.Path(os.environ.get("ROOT_DIR", "."))
 
 
 def shell(command: str, **kwargs) -> subprocess.CompletedProcess:
