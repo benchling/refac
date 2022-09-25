@@ -40,10 +40,7 @@ def codemod_old_exports_to_new_exports(
         # absolute import - e.g. `from a.b.c`
         f"^\s*from {old_module}",
         # relative import - e.g. `from .c` or `from ..b` or `from ...a`
-        *[
-            f"^\s*from \.{{{i}}}{part}"
-            for i, part in enumerate(reversed(old_module.split(".")), start=1)
-        ],
+        *[f"^\s*from \.+{part}" for part in reversed(old_module.split("."))],
     )
     combined = "(" + "|".join(regexes) + ")"
 
