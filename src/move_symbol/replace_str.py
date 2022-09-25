@@ -20,6 +20,7 @@ def find_and_replace(old: str, new: str) -> subprocess.CompletedProcess:
 
     >>> find_and_replace("old", "new")
     """
+    # TODO: handle 'no input files' error
     bsd_sed = "sed -i '' -e"
     gnu_sed = "sed -i"
     sed = bsd_sed if sys.platform == "darwin" else gnu_sed
