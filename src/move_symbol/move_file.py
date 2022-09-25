@@ -36,15 +36,7 @@ def codemod_old_exports_to_new_exports(
     old_module = to_module(old_path)
     new_module = to_module(new_path)
 
-    regexes = (
-        # absolute import - e.g. `from a.b.c`
-        f"^\s*from {old_module}",
-        # relative import - e.g. `from .c` or `from ..b` or `from ...a`
-        *[f"^\s*from \.+{part}" for part in reversed(old_module.split("."))],
-    )
-    combined = "(" + "|".join(regexes) + ")"
-
-    grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '\.py$'"
+    grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{old_module.rsplit('.', 1)[1]}' {str(ROOT_DIR)} | grep -E '\.py$'"
     codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={old_module} --new={new_module}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
