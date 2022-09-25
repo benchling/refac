@@ -59,5 +59,5 @@ if __name__ == "__main__":
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
         options={"bdist_wheel": {"universal": "1"}},
-        entry_points={"console_scripts": ["move-symbol = move_symbol.__main__"]},
+        entry_points={"console_scripts": ["move-symbol = move_symbol.__init__:main"]},
     )
