@@ -9,6 +9,8 @@ def escape(s: str) -> str:
     """Escape a string for use in sed.
 
     In addition to usual regex escaping, we also need to escape forward slashes (/).
+    >>> escape("foo/bar.py")
+    "foo\\/bar\\.py"
     """
     return re.escape(s).replace("/", "\\/")
 
