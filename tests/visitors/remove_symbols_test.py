@@ -2,6 +2,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from libcst.codemod.visitors import (
+    ImportItem,
+)
 from libcst.codemod import CodemodTest
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
@@ -104,42 +107,41 @@ class TestRemoveSymbolsVisitor(CodemodTest):
         with test_context() as context:
             self.assertCodemod(before, after, {"Bar"}, context_override=context)
 
-    def test_remove_unused_import(self):
+    def test_remove_unused_import_from(self):
         before = """
-            from x.y import z
+            from x import y as z
             from a.b import c
 
-            z
             class Bar:
                 c
+                c.d
+                z
         """
         after = """
-            from x.y import z
-
-            z
         """
         with test_context() as context:
             self.assertCodemod(before, after, {"Bar"}, context_override=context)
             self.assertEqual(
                 context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"],
-                {
-                    "a.b.c",
-                },
+                {ImportItem("a.b", "c"), ImportItem("x", "y", "z")},
             )
 
-    def test_remove_unused_import_include_implicit_siblings(self):
+    def test_remove_unused_import(self):
         before = """
+            import m
+            import f.k.j
+            import g as h
+            
             def foo():
-                pass
-            def bar():
-                foo()
+                m
+                h
+                f.k.j
         """
         after = """
-            def foo():
-                pass
         """
         with test_context() as context:
-            self.assertCodemod(before, after, {"bar"}, context_override=context)
+            self.assertCodemod(before, after, {"foo"}, context_override=context)
             self.assertEqual(
-                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"], {"a.b.foo"}
+                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"],
+                {ImportItem("f.k.j"), ImportItem("g", None, "h"), ImportItem("m")},
             )

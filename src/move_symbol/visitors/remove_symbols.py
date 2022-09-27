@@ -1,18 +1,70 @@
-#!/usr/bin/env python3
-from typing import Iterable, Optional, Union
+from typing import Optional, Union
 
 import libcst as cst
 from libcst.codemod import (
     CodemodContext,
     VisitorBasedCodemodCommand,
 )
-from libcst.codemod.visitors import RemoveImportsVisitor
-from libcst.metadata.scope_provider import (
-    QualifiedName,
-    QualifiedNameSource,
+from libcst.codemod._visitor import ContextAwareVisitor
+from libcst.codemod.visitors import (
+    RemoveImportsVisitor,
+    ImportItem,
 )
+from libcst.metadata.scope_provider import (
+    ScopeProvider,
+    ImportAssignment,
+)
+from libcst.helpers import get_full_name_for_node_or_raise
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
+
+
+class CollectAssociatedImportsVisitor(ContextAwareVisitor):
+    def __init__(self, context: CodemodContext, symbols_to_remove: set[str]) -> None:
+        super().__init__(context)
+        self.symbols_to_remove = symbols_to_remove
+        metadata_wrapper = self.context.wrapper
+        if metadata_wrapper is None:
+            raise Exception("Cannot look up scope, metadata is not computed for node!")
+        self.scope_provider = metadata_wrapper.resolve(ScopeProvider)
+
+    def collect(self, node: Union[cst.Name, cst.Attribute]) -> None:
+        scope = self.scope_provider.get(node)
+        if scope is None:
+            return
+
+        name = get_full_name_for_node_or_raise(node)
+        if name in self.symbols_to_remove:
+            return
+
+        if scope == scope.globals:
+            if "." in name:
+                raise Exception(
+                    f"Cannot have '.' in name and be in global scope. Unsure how to import {name}"
+                )
+            RemoveSymbolsVisitor.add_associated_import(
+                self.context, ImportItem(self.context.full_module_name, name, None)
+            )
+            return
+
+        for assignment in scope[name]:
+            if isinstance(assignment, ImportAssignment):
+                if assignment.scope == scope.globals:
+                    if isinstance(assignment.node, (cst.Import, cst.ImportFrom)):
+                        RemoveImportsVisitor.remove_unused_import_by_node(
+                            self.context, assignment.node
+                        )
+                        RemoveSymbolsVisitor.add_associated_import_by_node(
+                            self.context, assignment.node, name
+                        )
+
+    def visit_Name(self, node: cst.Name) -> Optional[bool]:
+        self.collect(node)
+        return True
+
+    def visit_Attribute(self, node: cst.Attribute) -> Optional[bool]:
+        self.collect(node)
+        return True
 
 
 class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
@@ -26,41 +78,53 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
     """
 
     CONTEXT_KEY = "RemoveSymbolsVisitor"
-    METADATA_DEPENDENCIES = (FullyQualifiedNameProvider,)
+    METADATA_DEPENDENCIES = (FullyQualifiedNameProvider, ScopeProvider)
 
-    def _add_associated_import(self, name: str) -> None:
-        self.context.scratch[self.CONTEXT_KEY]["imports"].add(name)
+    @classmethod
+    def add_associated_import(cls, context: CodemodContext, item: ImportItem) -> None:
+        context.scratch[cls.CONTEXT_KEY]["imports"].add(item)
 
-    def _collect_associated_imports(
-        self, nodes: set[Union[cst.FunctionDef, cst.ClassDef, cst.SimpleStatementLine]]
+    @classmethod
+    def add_associated_import_by_node(
+        cls, context: CodemodContext, node: Union[cst.Import, cst.ImportFrom], name: str
     ) -> None:
-        # TODO: CAHNGE THIS FUNCTION NAME
-        self.context.scratch[self.CONTEXT_KEY]["nodes"] |= nodes
-
-        qnames: set[QualifiedName] = set()
-        for node in nodes:
-            for child in iter_all_children(node):
-                qnames |= self.get_metadata(FullyQualifiedNameProvider, child, set())
-
-        for qname in qnames:
-            if qname.source == QualifiedNameSource.IMPORT:
-                # TODO: asname
-                self._add_associated_import(qname.name)
-                module, obj = qname.name.rsplit(".", 1)
-                RemoveImportsVisitor.remove_unused_import(self.context, module, obj)
-            elif qname.source == QualifiedNameSource.LOCAL:
-                full_module_name = self.context.full_module_name
-                assert full_module_name, "Context missing `full_module_name`"
-                xx = qname.name.removeprefix(full_module_name + ".")
-                if "." not in xx and xx not in self.symbols_to_remove:
-                    self._add_associated_import(qname.name)
+        if isinstance(node, cst.Import):
+            for import_name in node.names:
+                if (
+                    import_name.evaluated_alias == name
+                    or import_name.evaluated_name == name
+                ):
+                    cls.add_associated_import(
+                        context,
+                        ImportItem(
+                            import_name.evaluated_name,
+                            None,
+                            import_name.evaluated_alias,
+                        ),
+                    )
+        elif isinstance(node, cst.ImportFrom):
+            if isinstance(node.names, cst.ImportStar):
+                return
+            for import_name in node.names:
+                if (
+                    import_name.evaluated_alias == name
+                    or import_name.evaluated_name == name
+                ):
+                    cls.add_associated_import(
+                        context,
+                        ImportItem(
+                            get_full_name_for_node_or_raise(node.module)
+                            if node.module is not None
+                            else "",
+                            import_name.evaluated_name,
+                            import_name.evaluated_alias,
+                            len(node.relative),
+                        ),
+                    )
 
     def __init__(self, context: CodemodContext, symbols_to_remove: set[str]) -> None:
         super().__init__(context)
         self.symbols_to_remove: set[str] = symbols_to_remove
-        self._removed: set[
-            Union[cst.FunctionDef, cst.ClassDef, cst.SimpleStatementLine]
-        ] = set()
         self.context.scratch[self.CONTEXT_KEY] = {
             "imports": set(),
             "nodes": set(),
@@ -93,7 +157,10 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
         if original_node.name.value in self.symbols_to_remove:
-            self._removed.add(original_node)
+            self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
+            original_node.visit(
+                CollectAssociatedImportsVisitor(self.context, self.symbols_to_remove)
+            )
             return cst.RemoveFromParent()
         return super().leave_FunctionDef(original_node, updated_node)
 
@@ -103,7 +170,10 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
         if original_node.name.value in self.symbols_to_remove:
-            self._removed.add(original_node)
+            self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
+            original_node.visit(
+                CollectAssociatedImportsVisitor(self.context, self.symbols_to_remove)
+            )
             return cst.RemoveFromParent()
         return super().leave_ClassDef(original_node, updated_node)
 
@@ -122,6 +192,9 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
                         isinstance(target, cst.Name)
                         and target.value in self.symbols_to_remove
                     ):
+                        self.context.scratch[self.CONTEXT_KEY]["nodes"].add(
+                            original_node
+                        )
                         return cst.RemoveFromParent()
 
             if isinstance(node, cst.AnnAssign):
@@ -130,19 +203,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
                     isinstance(target, cst.Name)
                     and target.value in self.symbols_to_remove
                 ):
+                    self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
                     return cst.RemoveFromParent()
 
         return super().leave_SimpleStatementLine(original_node, updated_node)
-
-    def leave_Module(
-        self, original_node: cst.Module, updated_node: cst.Module
-    ) -> cst.Module:
-        self._collect_associated_imports(self._removed)
-        return super().leave_Module(original_node, updated_node)
-
-
-def iter_all_children(node: cst.CSTNode) -> Iterable[cst.CSTNode]:
-    """Collect all nodes in the tree."""
-    yield node
-    for child in node.children:
-        yield from iter_all_children(child)
