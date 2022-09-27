@@ -3,7 +3,7 @@ Move Python symbol and fix all imports.
 """
 
 from pathlib import Path
-from typing import Set, Tuple
+from typing import List, Set, Tuple
 
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
@@ -14,10 +14,10 @@ from move_symbol.visitors.add_symbols import AddSymbolsVisitor
 from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
 
 
-def validate(srcs: str, dsts: str) -> Tuple[str, Set[str], str, Set[str]]:
+def validate(
+    old_full_symbols: List[str], new_full_symbols: List[str]
+) -> Tuple[str, Set[str], str, Set[str]]:
     """Validate that all imports are valid and that all symbols are defined"""
-    old_full_symbols = srcs.split(",")
-    new_full_symbols = dsts.split(",")
 
     assert len(old_full_symbols) == len(new_full_symbols), (
         "Must specify the same number of old and new symbols",
@@ -52,7 +52,7 @@ def validate(srcs: str, dsts: str) -> Tuple[str, Set[str], str, Set[str]]:
     return (old_module, old_symbols, new_module, new_symbols)
 
 
-def move(srcs: str, dsts: str) -> None:
+def move(srcs: List[str], dsts: List[str]) -> None:
     (old_module, old_symbols, new_module, _new_symbols) = validate(srcs, dsts)
     old_file = to_file(old_module)
     new_file = to_file(new_module)
@@ -94,21 +94,23 @@ def move(srcs: str, dsts: str) -> None:
     Path(new_file).write_text(updated_new_tree.code)
 
 
-def codemod_old_exports_to_new_exports(old_symbols: str, new_symbols: str) -> None:
+def codemod_old_exports_to_new_exports(
+    old_symbols: List[str], new_symbols: List[str]
+) -> None:
     """Execute ReplaceCodemod to renamed old exports to new exports.
 
     For performance, we only apply the codemod to Python files that contain any of the old symbols
     """
 
-    symbols = [old_symbol.rsplit(".", 1)[1] for old_symbol in old_symbols.split(",")]
+    symbols = [old_symbol.rsplit(".", 1)[1] for old_symbol in old_symbols]
     combined = "(" + "|".join(symbols) + ")"
 
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '\.py$'"
-    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={old_symbols} --new={new_symbols}"
+    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={','.join(old_symbols)} --new={','.join(new_symbols)}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
 
 
-def move_symbol(srcs: str, dsts: str) -> None:
+def move_symbol(srcs: List[str], dsts: List[str]) -> None:
     move(srcs, dsts)
     codemod_old_exports_to_new_exports(srcs, dsts)

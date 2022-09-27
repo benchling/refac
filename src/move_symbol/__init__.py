@@ -39,7 +39,7 @@ def main():
     if src == dst:
         sys.exit(0)
 
-    if Path(src).is_file():
-        move_file(Path(src), Path(dst), include_strings=True)
+    if Path(src.split(",")[0]).is_file():
+        move_file(src.split(","), dst.split(","), include_strings=True)
     else:
-        move_symbol(src, dst)
+        move_symbol(src.split(","), dst.split(","))

@@ -8,6 +8,7 @@ Potential bugs:
 
 import pathlib
 import shutil
+from typing import List
 
 from move_symbol.replace_str import find_and_replace
 
@@ -61,9 +62,10 @@ def move(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
 
 
 def move_file(
-    old_path: pathlib.Path, new_path: pathlib.Path, include_strings: bool = False
+    old_paths: List[str], new_paths: List[str], include_strings: bool = False
 ) -> None:
     # TODO: Support moving multiple files?
+    old_path, new_path = pathlib.Path(old_paths[0]), pathlib.Path(new_paths[0])
     validate(old_path, new_path)
     move(old_path, new_path)
     codemod_old_exports_to_new_exports(old_path, new_path)
