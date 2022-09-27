@@ -6,6 +6,7 @@ from textwrap import dedent
 import libcst as cst
 from libcst.codemod import CodemodTest
 from libcst.codemod._context import CodemodContext
+from libcst.codemod.visitors import ImportItem
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
@@ -84,5 +85,9 @@ class TestAddSymbolsVisitor(CodemodTest):
                 )
             )
             self.assertCodemod(
-                before, after, set(module.body), {"a.b.c"}, context_override=context
+                before,
+                after,
+                set(module.body),
+                {ImportItem("a.b", "c")},
+                context_override=context,
             )
