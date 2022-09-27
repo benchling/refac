@@ -44,7 +44,10 @@ def validate(
     old_file = to_file(old_module)
     new_file = to_file(new_module)
 
-    assert Path(old_file).is_file(), f"File {old_file} does not exist"
+    assert (
+        Path(old_file).is_file()
+        or (Path(old_file.removesuffix(".py")) / "__init__.py").is_file()
+    ), (f"File {old_file} does not exist",)
     make_py_file(Path(new_file))
 
     return (old_module, old_symbols, new_module, new_symbols)
@@ -52,7 +55,11 @@ def validate(
 
 def move(srcs: List[str], dsts: List[str]) -> None:
     (old_module, old_symbols, new_module, _new_symbols) = validate(srcs, dsts)
-    old_file = to_file(old_module)
+    old_file = (
+        to_file(old_module)
+        if Path(to_file(old_module)).is_file()
+        else to_file(old_module).removesuffix(".py") + "/__init__.py"
+    )
     new_file = to_file(new_module)
 
     manager = FullRepoManager(
