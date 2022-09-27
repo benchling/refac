@@ -9,7 +9,7 @@ from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
-from move_symbol.utils import ROOT_DIR, shell, to_file
+from move_symbol.utils import ROOT_DIR, make_py_file, shell, to_file
 from move_symbol.visitors.add_symbols import AddSymbolsVisitor
 from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
 
@@ -45,9 +45,7 @@ def validate(
     new_file = to_file(new_module)
 
     assert Path(old_file).is_file(), f"File {old_file} does not exist"
-    if not Path(new_file).exists():
-        Path(new_file).parent.mkdir(parents=True, exist_ok=True)
-        Path(new_file).touch()
+    make_py_file(Path(new_file))
 
     return (old_module, old_symbols, new_module, new_symbols)
 

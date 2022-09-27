@@ -47,3 +47,22 @@ def to_file(module: str) -> str:
     """
     filename = module.replace(".", "/") + ".py"
     return filename
+
+
+def make_py_file(path: pathlib.Path) -> None:
+    """Make a Python file at `path` if it doesn't exist.
+
+    Also make any missing directories and add __init__.py files.
+
+    >>> make_py_file(pathlib.Path("src/models/user.py"))
+    """
+    if path.exists():
+        return
+    parent = path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    path.touch()
+
+    while parent != ROOT_DIR:
+        if not (parent / "__init__.py").exists():
+            (parent / "__init__.py").touch()
+        parent = parent.parent

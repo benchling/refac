@@ -12,7 +12,7 @@ from typing import List
 
 from move_symbol.replace_str import find_and_replace
 
-from move_symbol.utils import ROOT_DIR, shell, to_module
+from move_symbol.utils import ROOT_DIR, make_py_file, shell, to_module
 
 
 def validate(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
@@ -45,13 +45,14 @@ def codemod_old_exports_to_new_exports(
 
 def move(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
     """Copy contents of `old_path` to `new_path`."""
+    make_py_file(new_path)
+
     if old_path.is_file() and (not new_path.exists() or new_path.is_file()):
         old_contents = old_path.read_text()
         new_contents = (
             new_path.read_text() + "\n" if new_path.is_file() else ""
         ) + old_contents
 
-        new_path.parent.mkdir(parents=True, exist_ok=True)
         new_path.write_text(new_contents)
         old_path.unlink()
         # TODO: May need to remove some imports from the new file if they point to self.
