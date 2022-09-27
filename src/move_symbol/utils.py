@@ -66,4 +66,3 @@ def make_py_file(path: pathlib.Path) -> None:
         if not (parent / "__init__.py").exists():
             (parent / "__init__.py").touch()
         parent = parent.parent
-        print(parent, ROOT_DIR)
