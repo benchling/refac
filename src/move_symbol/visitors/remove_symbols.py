@@ -13,6 +13,7 @@ from libcst.codemod.visitors import (
 from libcst.metadata.scope_provider import (
     ScopeProvider,
     ImportAssignment,
+    Assignment,
 )
 from libcst.helpers import get_full_name_for_node_or_raise
 from libcst.codemod._context import CodemodContext
@@ -37,16 +38,6 @@ class CollectAssociatedImportsVisitor(ContextAwareVisitor):
         if name in self.symbols_to_remove:
             return
 
-        if scope == scope.globals:
-            if "." in name:
-                raise Exception(
-                    f"Cannot have '.' in name and be in global scope. Unsure how to import {name}"
-                )
-            RemoveSymbolsVisitor.add_associated_import(
-                self.context, ImportItem(self.context.full_module_name, name, None)
-            )
-            return
-
         for assignment in scope[name]:
             if isinstance(assignment, ImportAssignment):
                 if assignment.scope == scope.globals:
@@ -57,6 +48,12 @@ class CollectAssociatedImportsVisitor(ContextAwareVisitor):
                         RemoveSymbolsVisitor.add_associated_import_by_node(
                             self.context, assignment.node, name
                         )
+            elif (
+                isinstance(assignment, Assignment) and assignment.scope == scope.globals
+            ):
+                RemoveSymbolsVisitor.add_associated_import(
+                    self.context, ImportItem(self.context.full_module_name, name, None)
+                )
 
     def visit_Name(self, node: cst.Name) -> Optional[bool]:
         self.collect(node)
@@ -124,6 +121,9 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
 
     def __init__(self, context: CodemodContext, symbols_to_remove: set[str]) -> None:
         super().__init__(context)
+        assert all(
+            "." not in symbol for symbol in symbols_to_remove
+        ), "Cannot remove symbols with '.' in them"
         self.symbols_to_remove: set[str] = symbols_to_remove
         self.context.scratch[self.CONTEXT_KEY] = {
             "imports": set(),

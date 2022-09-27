@@ -53,35 +53,11 @@ class TestRemoveSymbolsVisitor(CodemodTest):
         with test_context() as context:
             self.assertCodemod(before, after, {"baz"}, context_override=context)
 
-    def test_keep_nested_constant(self):
-        before = """
-            if True:
-                baz = 1
-        """
-        after = """
-            if True:
-                baz = 1
-        """
-        with test_context() as context:
-            self.assertCodemod(before, after, {"baz"}, context_override=context)
-
     def test_remove_function(self):
         before = """
             def foo(): pass
         """
         after = """
-        """
-        with test_context() as context:
-            self.assertCodemod(before, after, {"foo"}, context_override=context)
-
-    def test_keep_nested_function(self):
-        before = """
-            def foo2():
-                def foo(): pass
-        """
-        after = """
-            def foo2():
-                def foo(): pass
         """
         with test_context() as context:
             self.assertCodemod(before, after, {"foo"}, context_override=context)
@@ -95,17 +71,27 @@ class TestRemoveSymbolsVisitor(CodemodTest):
         with test_context() as context:
             self.assertCodemod(before, after, {"Bar"}, context_override=context)
 
-    def test_keep_nested_class(self):
+    def test_keep_nested(self):
         before = """
             class Bar2:
                 class Bar: pass
+            def foo2():
+                def foo(): pass 
+            if True:
+                baz = 1
         """
         after = """
             class Bar2:
                 class Bar: pass
+            def foo2():
+                def foo(): pass 
+            if True:
+                baz = 1
         """
         with test_context() as context:
-            self.assertCodemod(before, after, {"Bar"}, context_override=context)
+            self.assertCodemod(
+                before, after, {"Bar", "foo", "baz"}, context_override=context
+            )
 
     def test_remove_unused_import_from(self):
         before = """
@@ -113,6 +99,7 @@ class TestRemoveSymbolsVisitor(CodemodTest):
             from a.b import c
 
             class Bar:
+                True
                 c
                 c.d
                 z
