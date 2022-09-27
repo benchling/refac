@@ -11,6 +11,8 @@ class Import:
     """Represents a single import.
 
     The import statement `from a.b import c,d` refers to two imports: a.b.c, a.b.d
+
+    TODO: Consider replaceing with libcst.visitors.ImportItem
     """
 
     module: str
