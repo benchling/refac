@@ -5,11 +5,16 @@ Move Python symbol and fix all imports.
 from pathlib import Path
 from typing import List, Set, Tuple
 
+from libcst.codemod.visitors import ImportItem
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
 from move_symbol.utils import ROOT_DIR, make_py_file, shell, to_file
+from move_symbol.visitors.add_symbols import AddSymbolsVisitor
+from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
+
+
 from move_symbol.visitors.add_symbols import AddSymbolsVisitor
 from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
 
@@ -97,6 +102,17 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     assert new_context.module, "Module must be defined"
     updated_new_tree = add_visitor.transform_module(new_context.module)
     Path(new_file).write_text(updated_new_tree.code)
+
+    # Add back any symbols that are still needed in old module.
+    add_visitor_for_old_file = AddSymbolsVisitor(
+        old_context,
+        set(),
+        {ImportItem(new_module, symbol) for symbol in old_symbols},
+    )
+    updated_old_tree_again = add_visitor_for_old_file.transform_module(
+        old_context.module
+    )
+    Path(old_file).write_text(updated_old_tree_again.code)
 
 
 def codemod_old_exports_to_new_exports(
