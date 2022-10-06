@@ -10,6 +10,7 @@ from libcst.codemod.visitors import ImportItem
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
+from movepy.replace_str import find_and_replace
 
 from movepy.utils import ROOT_DIR, make_py_file, shell, to_file
 from movepy.visitors.add_symbols import AddSymbolsVisitor
@@ -136,3 +137,7 @@ def codemod_old_exports_to_new_exports(
 def move_object(srcs: List[str], dsts: List[str]) -> None:
     move(srcs, dsts)
     codemod_old_exports_to_new_exports(srcs, dsts)
+    
+    for src, dst in zip(srcs, dsts):
+        find_and_replace(src, dst)
+
