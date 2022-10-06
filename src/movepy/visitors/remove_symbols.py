@@ -78,12 +78,19 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
     METADATA_DEPENDENCIES = (FullyQualifiedNameProvider, ScopeProvider)
 
     @classmethod
+    def add_removed_node(cls, context: CodemodContext, node: cst.CSTNode) -> None:
+        context.scratch[cls.CONTEXT_KEY]["nodes"].add(node)
+
+    @classmethod
     def add_associated_import(cls, context: CodemodContext, item: ImportItem) -> None:
         context.scratch[cls.CONTEXT_KEY]["imports"].add(item)
 
     @classmethod
     def add_associated_import_by_node(
-        cls, context: CodemodContext, node: Union[cst.Import, cst.ImportFrom], name: str
+        cls,
+        context: CodemodContext,
+        node: Union[cst.Import, cst.ImportFrom],
+        name: str,
     ) -> None:
         if isinstance(node, cst.Import):
             for import_name in node.names:
@@ -157,7 +164,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
         if original_node.name.value in self.symbols_to_remove:
-            self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
+            self.add_removed_node(self.context, original_node)
             original_node.visit(
                 CollectAssociatedImportsVisitor(self.context, self.symbols_to_remove)
             )
@@ -170,7 +177,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
         cst.BaseStatement, cst.FlattenSentinel[cst.BaseStatement], cst.RemovalSentinel
     ]:
         if original_node.name.value in self.symbols_to_remove:
-            self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
+            self.add_removed_node(self.context, original_node)
             original_node.visit(
                 CollectAssociatedImportsVisitor(self.context, self.symbols_to_remove)
             )
@@ -192,9 +199,7 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
                         isinstance(target, cst.Name)
                         and target.value in self.symbols_to_remove
                     ):
-                        self.context.scratch[self.CONTEXT_KEY]["nodes"].add(
-                            original_node
-                        )
+                        self.add_removed_node(self.context, original_node)
                         return cst.RemoveFromParent()
 
             if isinstance(node, cst.AnnAssign):
@@ -203,7 +208,62 @@ class RemoveSymbolsVisitor(VisitorBasedCodemodCommand):
                     isinstance(target, cst.Name)
                     and target.value in self.symbols_to_remove
                 ):
-                    self.context.scratch[self.CONTEXT_KEY]["nodes"].add(original_node)
+                    self.add_removed_node(self.context, original_node)
                     return cst.RemoveFromParent()
 
         return super().leave_SimpleStatementLine(original_node, updated_node)
+
+    def leave_Import(
+        self, original_node: cst.Import, updated_node: cst.Import
+    ) -> Union[
+        cst.BaseSmallStatement,
+        cst.FlattenSentinel[cst.BaseSmallStatement],
+        cst.RemovalSentinel,
+    ]:
+        # TODO: Handle removing by alias
+        for node in original_node.names:
+            if node.evaluated_name in self.symbols_to_remove:
+                self.add_removed_node(
+                    self.context,
+                    cst.Import(names=[cst.ImportAlias(node.name, node.asname)]),
+                )
+        remaining_names = [
+            cst.ImportAlias(node.name, node.asname)
+            for node in original_node.names
+            if node.evaluated_name not in self.symbols_to_remove
+        ]
+        if len(remaining_names) == 0:
+            return cst.RemoveFromParent()
+        else:
+            return updated_node.with_changes(names=remaining_names)
+
+    def leave_ImportFrom(
+        self, original_node: cst.ImportFrom, updated_node: cst.ImportFrom
+    ) -> Union[
+        cst.BaseSmallStatement,
+        cst.FlattenSentinel[cst.BaseSmallStatement],
+        cst.RemovalSentinel,
+    ]:
+        if isinstance(original_node.names, cst.ImportStar):
+            return super().leave_ImportFrom(original_node, updated_node)
+
+        # TODO: Handle removing by alias
+        for node in original_node.names:
+            if node.evaluated_name in self.symbols_to_remove:
+                self.add_removed_node(
+                    self.context,
+                    cst.ImportFrom(
+                        module=original_node.module,
+                        names=[node],
+                        relative=original_node.relative,
+                    ),
+                )
+        remaining_names = [
+            cst.ImportAlias(node.name, node.asname)
+            for node in original_node.names
+            if node.evaluated_name not in self.symbols_to_remove
+        ]
+        if len(remaining_names) == 0:
+            return cst.RemoveFromParent()
+        else:
+            return updated_node.with_changes(names=remaining_names)

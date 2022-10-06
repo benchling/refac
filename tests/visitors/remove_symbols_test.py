@@ -132,3 +132,65 @@ class TestRemoveSymbolsVisitor(CodemodTest):
                 context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"],
                 {ImportItem("f.k.j"), ImportItem("g", None, "h"), ImportItem("m")},
             )
+
+    def test_remove_import_symbol(self):
+        before = """
+            import c
+        """
+        after = """
+        """
+        with test_context() as context:
+            self.assertCodemod(before, after, {"c"}, context_override=context)
+            removed_nodes = context.scratch[self.TRANSFORM.CONTEXT_KEY]["nodes"]
+            self.assertEqual(len(removed_nodes), 1)
+            self.assertEqual(next(iter(removed_nodes)).names[0].name.value, "c")
+            self.assertEqual(
+                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"], set()
+            )
+
+    def test_remove_import_symbol_2(self):
+        before = """
+            import c, d
+        """
+        after = """
+            import d
+        """
+        with test_context() as context:
+            self.assertCodemod(before, after, {"c"}, context_override=context)
+            removed_nodes = context.scratch[self.TRANSFORM.CONTEXT_KEY]["nodes"]
+            self.assertEqual(len(removed_nodes), 1)
+            self.assertEqual(next(iter(removed_nodes)).names[0].name.value, "c")
+            self.assertEqual(
+                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"], set()
+            )
+
+    def test_remove_importfrom_symbol(self):
+        before = """
+            from c import d
+        """
+        after = """
+        """
+        with test_context() as context:
+            self.assertCodemod(before, after, {"d"}, context_override=context)
+            removed_nodes = context.scratch[self.TRANSFORM.CONTEXT_KEY]["nodes"]
+            self.assertEqual(len(removed_nodes), 1)
+            self.assertEqual(next(iter(removed_nodes)).names[0].name.value, "d")
+            self.assertEqual(
+                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"], set()
+            )
+
+    def test_remove_importfrom_symbol_2(self):
+        before = """
+            from c import d, e
+        """
+        after = """
+            from c import e
+        """
+        with test_context() as context:
+            self.assertCodemod(before, after, {"d"}, context_override=context)
+            removed_nodes = context.scratch[self.TRANSFORM.CONTEXT_KEY]["nodes"]
+            self.assertEqual(len(removed_nodes), 1)
+            self.assertEqual(next(iter(removed_nodes)).names[0].name.value, "d")
+            self.assertEqual(
+                context.scratch[self.TRANSFORM.CONTEXT_KEY]["imports"], set()
+            )
