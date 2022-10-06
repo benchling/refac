@@ -1,17 +1,18 @@
-# move-symbol
+# movepy
+
 A tool for moving and refactoring python code.
 
 ## Quickstart
 
 ```bash
-pip install move-symbol
+pip install movepy
 ```
 
 ```bash
-move-symbol <src> <dst>
-move-symbol /path/to/src.py /path/to/dst.py
-move-symbol path.to.src.module path.to.dst.module
-move-symbol path.to.src.module.symbol path.to.dst.module.symbol
+movepy <src> <dst>
+movepy /path/to/src.py /path/to/dst.py
+movepy path.to.src.module path.to.dst.module
+movepy path.to.src.module.symbol path.to.dst.module.symbol
 ```
 
 ## Features

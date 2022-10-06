@@ -10,9 +10,9 @@ import pathlib
 import shutil
 from typing import List
 
-from move_symbol.replace_str import find_and_replace
+from movepy.replace_str import find_and_replace
 
-from move_symbol.utils import ROOT_DIR, make_py_file, shell, to_module
+from movepy.utils import ROOT_DIR, make_py_file, shell, to_module
 
 
 def validate(old_path: pathlib.Path, new_path: pathlib.Path) -> None:

@@ -11,13 +11,13 @@ from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
-from move_symbol.utils import ROOT_DIR, make_py_file, shell, to_file
-from move_symbol.visitors.add_symbols import AddSymbolsVisitor
-from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
+from movepy.utils import ROOT_DIR, make_py_file, shell, to_file
+from movepy.visitors.add_symbols import AddSymbolsVisitor
+from movepy.visitors.remove_symbols import RemoveSymbolsVisitor
 
 
-from move_symbol.visitors.add_symbols import AddSymbolsVisitor
-from move_symbol.visitors.remove_symbols import RemoveSymbolsVisitor
+from movepy.visitors.add_symbols import AddSymbolsVisitor
+from movepy.visitors.remove_symbols import RemoveSymbolsVisitor
 
 
 def validate(
@@ -133,6 +133,6 @@ def codemod_old_exports_to_new_exports(
     shell(command)
 
 
-def move_symbol(srcs: List[str], dsts: List[str]) -> None:
+def move_object(srcs: List[str], dsts: List[str]) -> None:
     move(srcs, dsts)
     codemod_old_exports_to_new_exports(srcs, dsts)

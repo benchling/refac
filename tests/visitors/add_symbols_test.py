@@ -10,7 +10,7 @@ from libcst.codemod.visitors import ImportItem
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
-from move_symbol.visitors import AddSymbolsVisitor
+from movepy.visitors import AddSymbolsVisitor
 
 
 @contextmanager
