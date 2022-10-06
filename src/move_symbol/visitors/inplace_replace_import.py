@@ -97,7 +97,9 @@ class InplaceReplaceImportVisitor(ContextAwareTransformer):
                 remove_name = remove.module
             changes = {
                 "names": [
-                    alias for alias in aliases if alias.evaluated_name != remove_name
+                    cst.ImportAlias(name=alias.name, asname=alias.asname)
+                    for alias in aliases
+                    if alias.evaluated_name != remove_name
                 ]
             }
             return updated.with_changes(**changes), None

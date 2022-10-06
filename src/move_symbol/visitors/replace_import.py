@@ -286,7 +286,8 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
         }
 
         def is_possible_old_import(im: Import) -> bool:
-            if not old_usage.startswith(im.key):  # type: ignore[union-attr]
+            # Usage must match key or usage must match a module path.
+            if old_usage != im.key and not old_usage.removeprefix(im.key).startswith("."):  # type: ignore[union-attr]
                 return False
             qname = get_fully_qualified_name(im, old_usage)  # type: ignore[arg-type]
             if self.exact_match:

@@ -723,7 +723,7 @@ class TestBugsFound(ReplaceCodemodTest):
             c
         """
         after = """
-            from a import b, ; from a import x
+            from a import b; from a import x
             x
         """
 
@@ -808,6 +808,20 @@ class TestBugsFound(ReplaceCodemodTest):
         self.assertCodemod(
             before, after, old="a.b.c.d", new="x.y", context_override=context_init
         )
+
+    def test_similarly_named_imports(self):
+        before = """
+            from a.b import c, cd
+            c
+            cd
+        """
+        after = """
+            from a.b import c; from x.y import cd
+            c
+            cd
+        """
+
+        self.assertCodemod(before, after, old="a.b.cd", new="x.y.cd")
 
 
 class TestPlayground(ReplaceCodemodTest):
