@@ -4,6 +4,7 @@ Move Python symbol and fix all imports.
 
 from pathlib import Path
 from typing import List, Set, Tuple
+from libcst import parse_module
 
 from libcst.codemod.visitors import ImportItem
 from libcst.codemod._context import CodemodContext
@@ -110,7 +111,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
         {ImportItem(new_module, symbol) for symbol in old_symbols},
     )
     updated_old_tree_again = add_visitor_for_old_file.transform_module(
-        old_context.module
+        parse_module(updated_old_tree.code)
     )
     Path(old_file).write_text(updated_old_tree_again.code)
 
