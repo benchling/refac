@@ -9,6 +9,7 @@ import argparse
 import sys
 
 from .move_file import move_file
+from .move_import import move_import
 from .move_object import move_object
 
 
@@ -45,5 +46,5 @@ def main():
         move_file(src.split(","), dst.split(","), include_strings=True)
     elif _type == "object":
         move_object(src.split(","), dst.split(","))
-    # elif _type == "import":
-    #     move_object(src.split(","), dst.split(","))
+    elif _type == "import":
+        move_import(src.split(","), dst.split(","))

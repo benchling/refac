@@ -24,7 +24,7 @@ def validate(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
         raise Exception(f"Cannot move a directory ({old_path}) to a file ({new_path}).")
 
 
-def codemod_old_exports_to_new_exports(
+def codemod_imports(
     old_path: pathlib.Path,
     new_path: pathlib.Path,
 ) -> None:
@@ -66,10 +66,12 @@ def move_file(
     old_paths: List[str], new_paths: List[str], include_strings: bool = False
 ) -> None:
     # TODO: Support moving multiple files?
+    if len(old_paths) != 1 or len(new_paths) != 1:
+        raise Exception("Only support moving one file at a time right now :/")
     old_path, new_path = pathlib.Path(old_paths[0]), pathlib.Path(new_paths[0])
     validate(old_path, new_path)
     move(old_path, new_path)
-    codemod_old_exports_to_new_exports(old_path, new_path)
+    codemod_imports(old_path, new_path)
 
     if include_strings:
         old_filename = str(old_path.resolve().relative_to(ROOT_DIR))

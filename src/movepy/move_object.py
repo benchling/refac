@@ -2,28 +2,21 @@
 Move Python symbol and fix all imports.
 """
 
-from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List
 from libcst import parse_module
 
 from libcst.codemod.visitors import ImportItem
 from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
+
 from movepy.replace_str import find_and_replace
-
-from movepy.utils import ROOT_DIR, make_py_file, shell, to_file
+from movepy.utils import ROOT_DIR, shell, to_file
 from movepy.visitors.add_symbols import AddSymbolsVisitor
 from movepy.visitors.remove_symbols import RemoveSymbolsVisitor
 
 
-from movepy.visitors.add_symbols import AddSymbolsVisitor
-from movepy.visitors.remove_symbols import RemoveSymbolsVisitor
-
-
-def validate(
-    old_full_symbols: List[str], new_full_symbols: List[str]
-) -> Tuple[str, Set[str], str, Set[str]]:
+def validate(old_full_symbols: List[str], new_full_symbols: List[str]) -> None:
     """Validate that all imports are valid and that all symbols are defined"""
 
     assert len(old_full_symbols) == len(new_full_symbols), (
@@ -38,54 +31,37 @@ def validate(
     assert len(new_modules) == 1, (
         f"New symbols must all be in the same module. Found: {new_modules}",
     )
-    old_module = old_modules.pop()
-    new_module = new_modules.pop()
 
     old_symbols = set(s.rsplit(".", 1)[1] for s in old_full_symbols)
     new_symbols = set(s.rsplit(".", 1)[1] for s in new_full_symbols)
     # TODO: Allow renaming symbols.
     assert old_symbols == new_symbols, (
-        f"Old symbols names must match new symbol names. {old_symbols} != {new_symbols}",
+        f"Renaming not yet supported. Old symbols names must match new symbol names. {old_symbols} != {new_symbols}",
     )
-
-    old_file = to_file(old_module)
-    new_file = to_file(new_module)
-
-    assert (
-        Path(old_file).is_file()
-        or (Path(old_file.removesuffix(".py")) / "__init__.py").is_file()
-    ), (f"File {old_file} does not exist",)
-    make_py_file(Path(new_file))
-
-    return (old_module, old_symbols, new_module, new_symbols)
 
 
 def move(srcs: List[str], dsts: List[str]) -> None:
-    (old_module, old_symbols, new_module, _new_symbols) = validate(srcs, dsts)
-    old_file = (
-        to_file(old_module)
-        if Path(to_file(old_module)).is_file()
-        else to_file(old_module).removesuffix(".py") + "/__init__.py"
-    )
-    new_file = to_file(new_module)
+    old_module = srcs[0].rsplit(".", 1)[0]
+    old_symbols = {src.rsplit(".", 1)[1] for src in srcs}
+    new_module = dsts[0].rsplit(".", 1)[0]
+
+    old_file = to_file(old_module, already_exists=True)
+    new_file = to_file(new_module, should_create=True)
 
     manager = FullRepoManager(
-        str(ROOT_DIR), [old_file, new_file], [FullyQualifiedNameProvider]
+        str(ROOT_DIR), [str(old_file), str(new_file)], [FullyQualifiedNameProvider]
     )
-    manager = FullRepoManager(
-        str(ROOT_DIR), [old_file, new_file], [FullyQualifiedNameProvider]
-    )
-    old_wrapper = manager.get_metadata_wrapper_for_path(old_file)
-    new_wrapper = manager.get_metadata_wrapper_for_path(new_file)
+    old_wrapper = manager.get_metadata_wrapper_for_path(str(old_file))
+    new_wrapper = manager.get_metadata_wrapper_for_path(str(new_file))
 
     old_context = CodemodContext(
-        filename=old_file,
+        filename=str(old_file),
         full_module_name=old_module,
         wrapper=old_wrapper,
         metadata_manager=manager,
     )
     new_context = CodemodContext(
-        filename=new_file,
+        filename=str(new_file),
         full_module_name=new_module,
         wrapper=new_wrapper,
         metadata_manager=manager,
@@ -94,7 +70,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     remove_visitor = RemoveSymbolsVisitor(old_context, old_symbols)
     assert old_context.module, "Module must be defined"
     updated_old_tree = remove_visitor.transform_module(old_context.module)
-    Path(old_file).write_text(updated_old_tree.code)
+    old_file.write_text(updated_old_tree.code)
 
     removed = remove_visitor.context.scratch[RemoveSymbolsVisitor.CONTEXT_KEY]
     nodes_to_add = removed["nodes"]
@@ -103,7 +79,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     add_visitor = AddSymbolsVisitor(new_context, nodes_to_add, imports_to_add)
     assert new_context.module, "Module must be defined"
     updated_new_tree = add_visitor.transform_module(new_context.module)
-    Path(new_file).write_text(updated_new_tree.code)
+    new_file.write_text(updated_new_tree.code)
 
     # Add back any symbols that are still needed in old module.
     add_visitor_for_old_file = AddSymbolsVisitor(
@@ -114,10 +90,10 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     updated_old_tree_again = add_visitor_for_old_file.transform_module(
         parse_module(updated_old_tree.code)
     )
-    Path(old_file).write_text(updated_old_tree_again.code)
+    old_file.write_text(updated_old_tree_again.code)
 
 
-def codemod_old_exports_to_new_exports(
+def codemod_imports(
     old_symbols: List[str], new_symbols: List[str]
 ) -> None:
     """Execute ReplaceCodemod to renamed old exports to new exports.
@@ -135,9 +111,9 @@ def codemod_old_exports_to_new_exports(
 
 
 def move_object(srcs: List[str], dsts: List[str]) -> None:
+    validate(srcs, dsts)
     move(srcs, dsts)
-    codemod_old_exports_to_new_exports(srcs, dsts)
-    
+    codemod_imports(srcs, dsts)
+
     for src, dst in zip(srcs, dsts):
         find_and_replace(src, dst)
-
