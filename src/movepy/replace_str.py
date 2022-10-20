@@ -22,9 +22,12 @@ def find_and_replace(old: str, new: str) -> subprocess.CompletedProcess:
 
     >>> find_and_replace("old", "new")
     """
-    # TODO: handle 'no input files' error
     bsd_sed = "sed -i '' -e"
     gnu_sed = "sed -i"
     sed = bsd_sed if sys.platform == "darwin" else gnu_sed
-    command = f"git grep --files-with-matches --fixed-strings '{old}' | xargs {sed} 's/{escape(old)}/{escape(new)}/g'"
+
+    bsd_xargs = "xargs"
+    gnu_xargs = "xargs --no-run-if-empty"
+    xargs = bsd_xargs if sys.platform == "darwin" else gnu_xargs
+    command = f"git grep --files-with-matches --fixed-strings '{old}' | {xargs} {sed} 's/{escape(old)}/{escape(new)}/g'"
     return shell(command)
