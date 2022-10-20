@@ -39,7 +39,9 @@ def to_module(path: pathlib.Path) -> str:
     return str(filename).replace(".py", "").replace("__init__", "").replace("/", ".")
 
 
-def to_file(module: str, already_exists=False, should_create=False) -> pathlib.Path:
+def to_file(
+    module: str, should_already_exist=False, should_create=False
+) -> pathlib.Path:
     """Convert a Python module to a Python filename.
 
     Assumes __init__.py if a directory exists at the module path.
@@ -58,8 +60,8 @@ def to_file(module: str, already_exists=False, should_create=False) -> pathlib.P
     else:
         path = pathlib.Path(filename)
 
-    if already_exists:
-        assert path.exists(), f"File {path} does not exist."
+    if should_already_exist and not path.exists():
+        raise FileNotFoundError(f"File {path} does not exist.")
     if should_create:
         make_py_file(path)
     return path

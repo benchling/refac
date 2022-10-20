@@ -17,7 +17,7 @@ def move(src: str, dst: str) -> None:
     old_module, old_symbol = src.rsplit(".", 1)
     new_module, new_symbol = dst.rsplit(".", 1)
 
-    old_file = to_file(old_module, already_exists=True)
+    old_file = to_file(old_module, should_already_exist=True)
     new_file = to_file(new_module, should_create=True)
 
     manager = FullRepoManager(
@@ -70,5 +70,10 @@ def codemod_imports(srcs: List[str], dsts: List[str]) -> None:
 def move_import(srcs: List[str], dsts: List[str]) -> None:
     if len(srcs) != 1 or len(dsts) != 1:
         raise Exception("Only support moving one import at a time right now :/")
-    move(srcs[0], dsts[0])
+    try:
+        move(srcs[0], dsts[0])
+    except FileNotFoundError:
+        # Skipping import move (becaues source file does not exist).
+        # Probably because we're moving a 3rd-party import around.
+        pass
     codemod_imports(srcs, dsts)

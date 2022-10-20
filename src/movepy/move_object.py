@@ -45,7 +45,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     old_symbols = {src.rsplit(".", 1)[1] for src in srcs}
     new_module = dsts[0].rsplit(".", 1)[0]
 
-    old_file = to_file(old_module, already_exists=True)
+    old_file = to_file(old_module, should_already_exist=True)
     new_file = to_file(new_module, should_create=True)
 
     manager = FullRepoManager(
