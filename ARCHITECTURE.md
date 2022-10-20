@@ -10,10 +10,11 @@ Each of these files has a similar layout. A `move_*()` function that consists of
 4. Updating any string references to the moved file/symbol/import.
 
 ```mermaid
-graph Codeflow;
-    Validation-->Move File/Symbol/Import;
-    Move File/Symbol/Import-->Update Imports;
-    Update Imports-->Update Strings;
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
 ```
 
 The logic for #1 + #2 is bespoke to each move function.
