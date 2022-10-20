@@ -11,9 +11,9 @@ Each of these files has a similar layout. A `move_*()` function that consists of
 
 ```mermaid
 graph LR;
-    Validation-->Move;
-    Move-->Imports;
-    Imports-->Strings;
+    valid[Validate]-->move[Move file/symbol/import];
+    move[Move file/symbol/import]-->import[Update imports];
+    import[Update imports]-->string[Update strings];
 ```
 
 The logic for #1 + #2 is bespoke to each move function.
