@@ -10,7 +10,7 @@ Each of these files has a similar layout. A `move_*()` function that consists of
 4. Updating any string references to the moved file/symbol/import.
 
 ```mermaid
-graph TD;
+graph LR;
     Validation-->Move;
     Move-->Imports;
     Imports-->Strings;
