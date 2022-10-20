@@ -16,7 +16,6 @@ class ReplaceCodemodTest(CodemodTest):
         old = kwargs.pop("old", None)
         new = kwargs.pop("new", None)
         format = kwargs.pop("format", None)
-        exact = kwargs.pop("exact", False)
         context_override = kwargs.pop(
             "context_override", CodemodContext(filename="a.py")
         )
@@ -27,7 +26,6 @@ class ReplaceCodemodTest(CodemodTest):
             old=old,
             new=new,
             format=format,
-            exact=exact,
             context_override=context_override,
             **kwargs,
         )
@@ -671,19 +669,7 @@ class TestExact(ReplaceCodemodTest):
             y.z
         """
 
-        self.assertCodemod(before, after, old="a.b.c", new="x.y.z", exact=True)
-
-    def test_exact_true_miss(self):
-        before = """
-            from a import b
-            b.c
-        """
-        after = """
-            from a import b
-            b.c
-        """
-
-        self.assertCodemod(before, after, old="a.b", new="x.y.z", exact=True)
+        self.assertCodemod(before, after, old="a.b.c", new="x.y.z")
 
     def test_exact_false_hit(self):
         before = """
@@ -695,7 +681,7 @@ class TestExact(ReplaceCodemodTest):
             z.c
         """
 
-        self.assertCodemod(before, after, old="a.b", new="x.y.z", exact=False)
+        self.assertCodemod(before, after, old="a.b", new="x.y.z")
 
 
 class TestBugsFound(ReplaceCodemodTest):
@@ -795,6 +781,7 @@ class TestBugsFound(ReplaceCodemodTest):
             filename="a/b/__init__.py", full_module_name="a.b"
         )
 
+        # noop
         self.assertCodemod(
             before, before, old="a.b.c.d", new="x.y", context_override=context
         )
@@ -802,6 +789,7 @@ class TestBugsFound(ReplaceCodemodTest):
             before, before, old="a.c.d", new="x.y", context_override=context_init
         )
 
+        # fix
         self.assertCodemod(
             before, after, old="a.c.d", new="x.y", context_override=context
         )

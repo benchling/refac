@@ -5,6 +5,8 @@ import libcst as cst
 from libcst.codemod import CodemodContext
 from libcst.helpers import get_absolute_module_for_import_or_raise
 
+from movepy.utils import to_file
+
 
 @dataclass(frozen=True)
 class Import:
@@ -125,6 +127,40 @@ class Import:
                     )
                 ]
             )
+
+    @property
+    def is_symbol(self) -> bool:
+        """True if the last part of the import refers to a symbol, not a module.
+
+        >>> Import('foo.bar.baz').is_symbol
+        True
+        >>> Import('foo.bar').is_symbol
+        False
+        """
+        if self.name.count(".") == 0:
+            return False
+
+        [head, last] = self.name.rsplit(".", 1)
+        f = to_file(head, should_already_exist=False)
+        return f.is_file() or (
+            (f / "__init__.py").is_file() and not (f / f"{last}.py").is_file()
+        )
+
+    @property
+    def requires_exact_match(self) -> bool:
+        """True if this import is a symbol.
+
+        Symbols require exact matches because we're just trying to rename a specific object.
+        Modules do not require exact matches because we're trying to renamed a bunch of objects with a shared prefix.
+
+        Examples:
+            Symbol #1: a.b.c
+            Symbol #2: a.b.cd
+
+            If we try and rename a.b.c, we don't accidentally want to move a.b.cd
+            If we try and rename a.b, we want to move both a.b.c and a.b.cd
+        """
+        return self.is_symbol
 
 
 def get_absolute_module_for_import(

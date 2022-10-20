@@ -58,14 +58,13 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
 
     This is similar to libcst's RenameCommand, but has a few different features:
       1. Supports custom formatting with aliases (using --format)
-      2. Supports partial + exact matching (using --exact)
       3. Imports get changed inplace (rather than adding to top of file).
       4. Supports multiple replaces in one invocation (see example invocation below).
 
     Command-line ImportMetadata:
         python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z <file_or_directory>
-        python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z --format "from x.y import z as a" --exact <file_or_directory>
-        python3 -m libcst.tool codemod replace.ReplaceCodemod --old="a.b.c,d.e.f" --new="x.y.z,q.r.s" --format "from x.y import z as a,from q.r import s" --exact <file_or_directory>
+        python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z --format "from x.y import z as a" <file_or_directory>
+        python3 -m libcst.tool codemod replace.ReplaceCodemod --old="a.b.c,d.e.f" --new="x.y.z,q.r.s" --format "from x.y import z as a,from q.r import s" <file_or_directory>
     """
 
     CONTEXT_KEY = "ReplaceCodemod"
@@ -98,15 +97,6 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
             type=str,
             default=None,
         )
-        arg_parser.add_argument(
-            "--exact",
-            dest="exact",
-            metavar="EXACT",
-            help="Set if `old` needs to be an exact match, not just a prefix match.",
-            action="store_const",
-            const=True,
-            default=False,
-        )
 
     def __init__(
         self,
@@ -114,7 +104,6 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
         old: str,
         new: str,
         format: Optional[str],
-        exact: bool,
     ):
         super().__init__(context)
         olds = [x.strip() for x in old.split(",")]
@@ -133,7 +122,6 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
                 f"`format` must be the same length as `new` or empty. Got {len(formats)} and {len(news)}."
             )
 
-        self.exact_match = exact
         pairs = [
             Pair(context, Import(olds[i]), Import(news[i]), formats[i])
             for i in range(len(olds))
@@ -193,7 +181,7 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
         for old_import in unused_imports:
             for pair in self.pairs:
                 is_match = (
-                    self.exact_match and old_import == pair.old
+                    pair.old.requires_exact_match and old_import == pair.old
                 ) or old_import.name.startswith(pair.old.name)
                 if is_match:
                     matches.append((old_import, pair))
@@ -290,7 +278,7 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
             if old_usage != im.key and not old_usage.removeprefix(im.key).startswith("."):  # type: ignore[union-attr]
                 return False
             qname = get_fully_qualified_name(im, old_usage)  # type: ignore[arg-type]
-            if self.exact_match:
+            if pair.old.requires_exact_match:
                 return qname == pair.old.name
             else:
                 return qname.startswith(pair.old.name)
