@@ -10,19 +10,19 @@ import sys
 
 from .move_file import move_file
 from .move_import import move_import
-from .move_object import move_object
+from .move_symbol import move_symbol
 
 
 def main():
     NAME = "movepy"
     DESCRIPTION = "Move Python symbols."
     USAGE = """
-    movepy [file|object|import] <src> <dst>
+    movepy [file|symbol|import] <src> <dst>
 
   examples:
     movepy file /path/to/src.py /path/to/dst.py
-    movepy object path.to.SrcClass path.to.DstClass
-    movepy object path.to.src_func1,path.to.src_func2 path.to.dst_func1,path.to.dst_func2
+    movepy symbol path.to.SrcClass path.to.DstClass
+    movepy symbol path.to.src_func1,path.to.src_func2 path.to.dst_func1,path.to.dst_func2
     movepy import path.to.src_import path.to.dst_import
   """
 
@@ -31,7 +31,7 @@ def main():
         "type",
         type=str,
         help="type of move to perform",
-        choices=["file", "object", "import"],
+        choices=["file", "symbol", "import"],
     )
     parser.add_argument("src", type=str, help="src or comma separated srcs")
     parser.add_argument("dst", type=str, help="dst or comma separated dsts")
@@ -44,7 +44,7 @@ def main():
 
     if _type == "file":
         move_file(src.split(","), dst.split(","), include_strings=True)
-    elif _type == "object":
-        move_object(src.split(","), dst.split(","))
+    elif _type == "symbol":
+        move_symbol(src.split(","), dst.split(","))
     elif _type == "import":
         move_import(src.split(","), dst.split(","))

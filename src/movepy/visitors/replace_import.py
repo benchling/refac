@@ -45,7 +45,7 @@ class Pair:
 
 
 class ReplaceCodemod(VisitorBasedCodemodCommand):
-    """Replace any Python object with another.
+    """Replace any Python symbol with another.
 
     Example:
       ## before
@@ -69,7 +69,7 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
     """
 
     CONTEXT_KEY = "ReplaceCodemod"
-    DESCRIPTION = "Replace any Python object with another"
+    DESCRIPTION = "Replace any Python symbol with another"
     METADATA_DEPENDENCIES = (ScopeProvider,)
 
     @staticmethod

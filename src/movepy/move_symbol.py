@@ -93,9 +93,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
     old_file.write_text(updated_old_tree_again.code)
 
 
-def codemod_imports(
-    old_symbols: List[str], new_symbols: List[str]
-) -> None:
+def codemod_imports(old_symbols: List[str], new_symbols: List[str]) -> None:
     """Execute ReplaceCodemod to renamed old exports to new exports.
 
     For performance, we only apply the codemod to Python files that contain any of the old symbols
@@ -110,7 +108,7 @@ def codemod_imports(
     shell(command)
 
 
-def move_object(srcs: List[str], dsts: List[str]) -> None:
+def move_symbol(srcs: List[str], dsts: List[str]) -> None:
     validate(srcs, dsts)
     move(srcs, dsts)
     codemod_imports(srcs, dsts)
