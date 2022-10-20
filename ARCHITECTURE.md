@@ -9,7 +9,14 @@ Each of these files has a similar layout. A `move_*()` function that consists of
 3. Updating the import statements for the other files in the codebase.
 4. Updating any string references to the moved file/symbol/import.
 
-The logic for #1 + #2 is bespoke to each move function. 
+```mermaid
+graph CodePipeline;
+    Validation-->Move File/Symbol/Import;
+    Move File/Symbol/Import-->Update Imports;
+    Update Imports-->Update Strings;
+```
+
+The logic for #1 + #2 is bespoke to each move function.
 
 1. Validation is fairly straightforward, and is mostly just checking that the source and destination paths are valid.
 
@@ -17,4 +24,6 @@ The logic for #1 + #2 is bespoke to each move function.
 
 The logic for #3 + #4 is shared across the `move_*` family.
 
-3. We execute the `ReplaceImportsCodemod` to update all the import statements in the codebase. This is the meat of the movepy codemod. 
+3. We execute the `ReplaceImportsCodemod` to update all the import statements in the codebase. This is the meat of the movepy codemod. As a performance improvement, we try to only run it on files that may have been affected by `git grep`-ing for relevant words.
+
+4. Finally, we `git grep` for the old and new paths and use `sed` to replace any string references to the moved file/symbol/import.
