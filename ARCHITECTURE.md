@@ -11,9 +11,9 @@ Each of these files has a similar layout. A `move_*()` function that consists of
 
 ```mermaid
 graph TD;
-    "Validation"-->"Move";
-    "Move"-->"Imports";
-    "Imports"-->"Strings;
+    Validation-->Move;
+    Move-->Imports;
+    Imports-->Strings;
 ```
 
 The logic for #1 + #2 is bespoke to each move function.
