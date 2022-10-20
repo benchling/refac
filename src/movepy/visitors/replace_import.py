@@ -44,7 +44,7 @@ class Pair:
         self.new_format = new_format
 
 
-class ReplaceCodemod(VisitorBasedCodemodCommand):
+class ReplaceImportCodemod(VisitorBasedCodemodCommand):
     """Replace any Python symbol with another.
 
     Example:
@@ -52,7 +52,7 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
       from a.b import c
       c.fn()
 
-      ## after: python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z <filename>
+      ## after: python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old=a.b.c --new=x.y.z <filename>
       from x.y import z
       z.fn()
 
@@ -62,12 +62,12 @@ class ReplaceCodemod(VisitorBasedCodemodCommand):
       4. Supports multiple replaces in one invocation (see example invocation below).
 
     Command-line ImportMetadata:
-        python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z <file_or_directory>
-        python3 -m libcst.tool codemod replace.ReplaceCodemod --old=a.b.c --new=x.y.z --format "from x.y import z as a" <file_or_directory>
-        python3 -m libcst.tool codemod replace.ReplaceCodemod --old="a.b.c,d.e.f" --new="x.y.z,q.r.s" --format "from x.y import z as a,from q.r import s" <file_or_directory>
+        python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old=a.b.c --new=x.y.z <file_or_directory>
+        python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old=a.b.c --new=x.y.z --format "from x.y import z as a" <file_or_directory>
+        python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old="a.b.c,d.e.f" --new="x.y.z,q.r.s" --format "from x.y import z as a,from q.r import s" <file_or_directory>
     """
 
-    CONTEXT_KEY = "ReplaceCodemod"
+    CONTEXT_KEY = "ReplaceImportCodemod"
     DESCRIPTION = "Replace any Python symbol with another"
     METADATA_DEPENDENCIES = (ScopeProvider,)
 

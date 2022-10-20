@@ -22,4 +22,12 @@ usage:
 
 ## Contributing
 
-Contributions are welcomed and appreciated. Please file GitHub issues for any bugs.
+Contributions are welcomed and appreciated. Check out ARCHITECTURE.md for an overview of the codebase.
+
+To run tests:
+
+```bash
+python -m unittest tests/**/*.py
+```
+
+Please file GitHub issues for any bugs.

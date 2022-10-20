@@ -28,7 +28,7 @@ def codemod_imports(
     old_path: pathlib.Path,
     new_path: pathlib.Path,
 ) -> None:
-    """Execute ReplaceCodemod to renamed old exports to new exports.
+    """Execute ReplaceImportCodemod to renamed old exports to new exports.
 
     For performance, we only apply the codemod to Python files may possibly have the old exports.
     We look for these Python files by absolute import of the `old_module` ('from a.b.c')
@@ -38,7 +38,7 @@ def codemod_imports(
     new_module = to_module(new_path)
 
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{old_module.rsplit('.', 1)[1]}' {str(ROOT_DIR)} | grep -E '\.py$'"
-    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={old_module} --new={new_module}"
+    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old={old_module} --new={new_module}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
 

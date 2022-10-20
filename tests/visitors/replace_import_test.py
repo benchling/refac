@@ -2,10 +2,10 @@ from typing import Any
 
 from libcst.codemod import CodemodContext, CodemodTest
 
-from movepy.visitors.replace_import import ReplaceCodemod
+from movepy.visitors.replace_import import ReplaceImportCodemod
 
 
-class ReplaceCodemodTest(CodemodTest):
+class ReplaceImportCodemodTest(CodemodTest):
     def assertCodemod(
         self,
         before: str,
@@ -31,8 +31,8 @@ class ReplaceCodemodTest(CodemodTest):
         )
 
 
-class TestOnlyImportCases(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestOnlyImportCases(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_import_only(self):
         for (before_after, old_new) in (
@@ -161,8 +161,8 @@ class TestOnlyImportCases(ReplaceCodemodTest):
             )
 
 
-class TestImportNameCases(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestImportNameCases(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_import_name_usage(self):
         for (before_after, old_new) in (
@@ -270,8 +270,8 @@ class TestImportNameCases(ReplaceCodemodTest):
             )
 
 
-class TestImportAttributeCases(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestImportAttributeCases(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_import_attribute_usage(self):
         for (before_after, old_new) in (
@@ -484,8 +484,8 @@ class TestImportAttributeCases(ReplaceCodemodTest):
             )
 
 
-class TestShadowedVariables(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestShadowedVariables(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_introduce_shadowing_variable_assignment_importonly(self):
         before = """
@@ -570,8 +570,8 @@ class TestShadowedVariables(ReplaceCodemodTest):
         self.assertCodemod(before, after, old="a.b", new="x.y")
 
 
-class TestFormat(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestFormat(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_format(self):
         before = """
@@ -588,8 +588,8 @@ class TestFormat(ReplaceCodemodTest):
         )
 
 
-class TestMultipleReplaces(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestMultipleReplaces(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_multiple_replaces(self):
         before = """
@@ -656,8 +656,8 @@ class TestMultipleReplaces(ReplaceCodemodTest):
         self.assertCodemod(before, after, old="a.b,a.c", new="x.y,x.z")
 
 
-class TestExact(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestExact(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_exact_true_hit(self):
         before = """
@@ -684,8 +684,8 @@ class TestExact(ReplaceCodemodTest):
         self.assertCodemod(before, after, old="a.b", new="x.y.z")
 
 
-class TestBugsFound(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestBugsFound(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_only_add_import_once(self):
         before = """
@@ -812,8 +812,8 @@ class TestBugsFound(ReplaceCodemodTest):
         self.assertCodemod(before, after, old="a.b.cd", new="x.y.cd")
 
 
-class TestPlayground(ReplaceCodemodTest):
-    TRANSFORM = ReplaceCodemod
+class TestPlayground(ReplaceImportCodemodTest):
+    TRANSFORM = ReplaceImportCodemod
 
     def test_playground(self):
         before = """

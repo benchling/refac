@@ -94,7 +94,7 @@ def move(srcs: List[str], dsts: List[str]) -> None:
 
 
 def codemod_imports(old_symbols: List[str], new_symbols: List[str]) -> None:
-    """Execute ReplaceCodemod to renamed old exports to new exports.
+    """Execute ReplaceImportCodemod to renamed old exports to new exports.
 
     For performance, we only apply the codemod to Python files that contain any of the old symbols
     """
@@ -103,7 +103,7 @@ def codemod_imports(old_symbols: List[str], new_symbols: List[str]) -> None:
     combined = "(" + "|".join(symbols) + ")"
 
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '\.py$'"
-    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceCodemod --old={','.join(old_symbols)} --new={','.join(new_symbols)}"
+    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old={','.join(old_symbols)} --new={','.join(new_symbols)}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
 
