@@ -38,7 +38,7 @@ def codemod_imports(
     new_module = to_module(new_path)
 
     grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{old_module.rsplit('.', 1)[1]}' {str(ROOT_DIR)} | grep -E '\.py$'"
-    codemod_command = f"python3 -m libcst.tool codemod replace.ReplaceImportCodemod --old={old_module} --new={new_module}"
+    codemod_command = f"python3 -m libcst.tool codemod __init__.ReplaceImportCodemod --old={old_module} --new={new_module}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
 

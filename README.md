@@ -9,6 +9,14 @@ pip install movepy
 movepy file /path/to/src.py /path/to/dst.py
 ```
 
+and add the following to your `.libcst.codemod.yaml` at the root of your project:
+
+```yaml
+modules:
+- 'movepy.visitors'
+```
+
+
 ```bash
 usage:
     movepy [file|symbol|import] <src> <dst>
