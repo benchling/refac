@@ -180,10 +180,7 @@ class ReplaceImportCodemod(VisitorBasedCodemodCommand):
         matches: List[Tuple[Import, Pair]] = []
         for old_import in unused_imports:
             for pair in self.pairs:
-                is_match = (
-                    pair.old.requires_exact_match and old_import == pair.old
-                ) or old_import.name.startswith(pair.old.name)
-                if is_match:
+                if pair.old.match(old_import.name):
                     matches.append((old_import, pair))
                     break
 
@@ -278,10 +275,7 @@ class ReplaceImportCodemod(VisitorBasedCodemodCommand):
             if old_usage != im.key and not old_usage.removeprefix(im.key).startswith("."):  # type: ignore[union-attr]
                 return False
             qname = get_fully_qualified_name(im, old_usage)  # type: ignore[arg-type]
-            if pair.old.requires_exact_match:
-                return qname == pair.old.name
-            else:
-                return qname.startswith(pair.old.name)
+            return pair.old.match(qname)
 
         possible_imports = [
             im

@@ -97,6 +97,21 @@ class Import:
         elif origin == "ImportFrom":
             return Import(".".join(self.parts[:-1]), self.parts[-1], self.asname)
         raise Exception(f"Unknown origin: {origin}")
+    
+    def match(self, qname: str) -> bool:
+        """True if `self` is a valid way to import the `qname` symbol.
+        
+        >>> Import("a", "b"), "a.b")
+        True
+        >>> Import("a", "b"), "a.b.c")
+        True
+        >>> Import("a", "b"), "a.b.c.d")
+        True
+        >>> Import("a", "b", "a.bc")
+        False
+        """
+        return self.name == qname or qname.startswith(f"{self.name}.")
+        
 
     def to_libcst_node(
         self, context: CodemodContext
