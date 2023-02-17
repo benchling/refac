@@ -9,7 +9,8 @@ on:
       - '**/*.md'
 
 jobs:
-  build:
+  lint_test:
+    name: Lint and test on Python ${{ matrix.python-version }} 
     runs-on: ubuntu-latest
     strategy:
       matrix:
