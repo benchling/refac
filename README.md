@@ -34,7 +34,10 @@ Contributions are welcomed and appreciated. Check out ARCHITECTURE.md for an ove
 
 To run tests:
 
+
 ```bash
+# Must be using Python >3.9
+python -m pip install -r requirements.txt
 python -m unittest tests/**/*.py
 ```
 
