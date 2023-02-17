@@ -16,7 +16,6 @@ from libcst.metadata.scope_provider import (
     Assignment,
 )
 from libcst.helpers import get_full_name_for_node_or_raise
-from libcst.codemod._context import CodemodContext
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
 
