@@ -627,7 +627,6 @@ class TestMultipleReplaces(ReplaceImportCodemodTest):
             format="from x.y import z,from c import e as f",
         )
 
-    # test is flaky
     def test_replace_multiple_on_same_line(self):
         before = """
             from a import b, c
@@ -641,7 +640,6 @@ class TestMultipleReplaces(ReplaceImportCodemodTest):
         """
         self.assertCodemod(before, after, old="a.b,a.c", new="x.y,x.z")
 
-    # test is flaky
     def test_replace_multiple_on_same_line_with_old_import(self):
         before = """
             from a import b, c, d

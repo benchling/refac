@@ -1,5 +1,5 @@
 __description__ = "Tool to move around Python source code."
-__license__ = "TBD"
+__license__ = "MIT License"
 __uri__ = "https://github.com/benchling/movepy"
 __version__ = "0.0.1"
 __author__ = "Benchling Eng"

@@ -114,7 +114,7 @@ class InplaceReplaceImportVisitor(ContextAwareTransformer):
         changes = {
             "body": (
                 *updated.body,
-                *[add.to_libcst_node(self.context) for add in additions],
+                *[add.to_libcst_node(self.context) for add in sorted(additions, key=lambda i: i.name)],
             )
         }
         return updated.with_changes(**changes)
