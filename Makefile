@@ -1,11 +1,8 @@
 install:
 	pip install -r requirements.txt
 
-test:
+test: install
 	python -m unittest tests/**/*.py
 
-install-linters:
-	pip install ruff
-
-lint:
+lint: install
 	ruff check .
