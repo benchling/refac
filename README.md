@@ -2,6 +2,8 @@
 
 A tool for moving and refactoring python code. It supports moving files or entire directories (movepy file). Also supports moving specific symbols inside a file (movepy symbol) or specific imports (movepy import).
 
+[![Checks](https://github.com/benchling/movepy/actions/workflows/checks.yaml/badge.svg?branch=main&event=push)](https://github.com/benchling/movepy/actions/workflows/checks.yaml)
+
 ## Quickstart
 
 ```bash
