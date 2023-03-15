@@ -8,9 +8,9 @@ ROOT_DIR = Path(__file__).parent.resolve()
 
 ###################################################################
 
-NAME = "movepy"
+NAME = "refac"
 PACKAGES = find_packages(where="src")
-META_PATH = ROOT_DIR.joinpath("src/movepy/__init__.py")
+META_PATH = ROOT_DIR.joinpath("src/refac/__init__.py")
 KEYWORDS = ["refactor", "symbol", "move"]
 CLASSIFIERS = [
     "Intended Audience :: Developers",
@@ -54,10 +54,10 @@ if __name__ == "__main__":
         long_description_content_type="text/markdown",
         packages=PACKAGES,
         package_dir={"": "src"},
-        package_data={"movepy": ["py.typed"]},
+        package_data={"refac": ["py.typed"]},
         zip_safe=False,
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
         options={"bdist_wheel": {"universal": "1"}},
-        entry_points={"console_scripts": ["movepy = movepy.__init__:main"]},
+        entry_points={"console_scripts": ["refac = refac.__init__:main"]},
     )

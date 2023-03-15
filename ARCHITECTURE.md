@@ -1,6 +1,6 @@
-`/src/movepy/**init**.py#main` is the entrypoint for the `movepy` script.
+`/src/refac/**init**.py#main` is the entrypoint for the `refac` script.
 
-The three commands `file`, `symbol`, and `import` are implemented in `/src/movepy/move_file.py`, `/src/movepy/move_symbol.py`, and `/src/movepy/move_import.py`, respectively.
+The three commands `file`, `symbol`, and `import` are implemented in `/src/refac/move_file.py`, `/src/refac/move_symbol.py`, and `/src/refac/move_import.py`, respectively.
 
 Each of these files has a similar layout. A `move_*()` function that consists of three parts:
 
@@ -24,6 +24,6 @@ The logic for #1 + #2 is bespoke to each move function.
 
 The logic for #3 + #4 is shared across the `move_*` family.
 
-3. We execute the `ReplaceImportsCodemod` to update all the import statements in the codebase. This is the meat of the movepy codemod. As a performance improvement, we try to only run it on files that may have been affected by `git grep`-ing for relevant words.
+3. We execute the `ReplaceImportsCodemod` to update all the import statements in the codebase. This is the meat of the refac codemod. As a performance improvement, we try to only run it on files that may have been affected by `git grep`-ing for relevant words.
 
 4. Finally, we `git grep` for the old and new paths and use `sed` to replace any string references to the moved file/symbol/import.
