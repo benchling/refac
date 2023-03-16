@@ -2,7 +2,7 @@ import re
 import subprocess
 import sys
 
-from movepy.utils import shell
+from refac.utils import shell
 
 
 def escape(s: str) -> str:

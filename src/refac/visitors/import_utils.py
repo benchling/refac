@@ -5,7 +5,7 @@ import libcst as cst
 from libcst.codemod import CodemodContext
 from libcst.helpers import get_absolute_module_for_import_or_raise
 
-from movepy.utils import to_file
+from refac.utils import to_file
 
 
 @dataclass(frozen=True)

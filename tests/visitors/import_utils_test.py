@@ -3,7 +3,7 @@ import unittest
 from libcst import parse_statement
 from libcst.codemod import CodemodContext
 
-from movepy.visitors import import_utils
+from refac.visitors import import_utils
 
 
 class ImportUtilsTest(unittest.TestCase):

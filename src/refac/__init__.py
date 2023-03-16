@@ -1,6 +1,6 @@
 __description__ = "Tool to move around Python source code."
 __license__ = "MIT License"
-__uri__ = "https://github.com/benchling/movepy"
+__uri__ = "https://github.com/benchling/refac"
 __version__ = "0.0.1"
 __author__ = "Benchling Eng"
 __email__ = "eng@benchling.com"
@@ -14,16 +14,16 @@ from .move_symbol import move_symbol
 
 
 def main():
-    NAME = "movepy"
+    NAME = "refac"
     DESCRIPTION = "Move Python symbols."
     USAGE = """
-    movepy [file|symbol|import] <src> <dst>
+    refac [file|symbol|import] <src> <dst>
 
   examples:
-    movepy file /path/to/src.py /path/to/dst.py
-    movepy symbol path.to.SrcClass path.to.DstClass
-    movepy symbol path.to.src_func1,path.to.src_func2 path.to.dst_func1,path.to.dst_func2
-    movepy import path.to.src_import path.to.dst_import
+    refac file /path/to/src.py /path/to/dst.py
+    refac symbol path.to.SrcClass path.to.DstClass
+    refac symbol path.to.src_func1,path.to.src_func2 path.to.dst_func1,path.to.dst_func2
+    refac import path.to.src_import path.to.dst_import
   """
 
     parser = argparse.ArgumentParser(prog=NAME, description=DESCRIPTION, usage=USAGE)

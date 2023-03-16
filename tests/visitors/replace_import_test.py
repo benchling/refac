@@ -2,7 +2,7 @@ from typing import Any
 
 from libcst.codemod import CodemodContext, CodemodTest
 
-from movepy.visitors.replace_import import ReplaceImportCodemod
+from refac.visitors.replace_import import ReplaceImportCodemod
 
 
 class ReplaceImportCodemodTest(CodemodTest):

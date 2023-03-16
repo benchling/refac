@@ -7,9 +7,9 @@ from libcst.codemod._context import CodemodContext
 from libcst.metadata.full_repo_manager import FullRepoManager
 from libcst.metadata.name_provider import FullyQualifiedNameProvider
 
-from movepy.visitors.add_symbols import AddSymbolsVisitor
-from movepy.visitors.remove_symbols import RemoveSymbolsVisitor
-from movepy.utils import ROOT_DIR, shell, to_file
+from refac.visitors.add_symbols import AddSymbolsVisitor
+from refac.visitors.remove_symbols import RemoveSymbolsVisitor
+from refac.utils import ROOT_DIR, shell, to_file
 
 
 def move(src: str, dst: str) -> None:
