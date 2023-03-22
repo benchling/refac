@@ -2,8 +2,9 @@
 name: Publish to PyPI
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'
 jobs:
   build-n-publish:
     name: Build and publish refac
