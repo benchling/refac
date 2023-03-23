@@ -1,9 +1,9 @@
 __description__ = "Tool to move around Python source code."
 __license__ = "MIT License"
 __uri__ = "https://github.com/benchling/refac"
-__version__ = "0.0.1"
-__author__ = "Benchling Eng"
-__email__ = "eng@benchling.com"
+__version__ = "0.0.2"
+__author__ = "Benchling Open Source"
+__email__ = "opensource@benchling.com"
 
 import argparse
 import sys
