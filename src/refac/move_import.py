@@ -61,7 +61,7 @@ def codemod_imports(srcs: List[str], dsts: List[str]) -> None:
     symbols = [old_symbol.rsplit(".", 1)[1] for old_symbol in srcs]
     combined = "(" + "|".join(symbols) + ")"
 
-    grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '\.py$'"
+    grep_for_filenames_command = f"git grep --files-with-matches --extended-regexp '{combined}' {str(ROOT_DIR)} | grep -E '[.]py$'"
     codemod_command = f"python3 -m libcst.tool codemod __init__.ReplaceImportCodemod --old={','.join(srcs)} --new={','.join(dsts)}"
     command = f"{grep_for_filenames_command} | xargs {codemod_command}"
     shell(command)
