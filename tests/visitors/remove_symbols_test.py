@@ -19,10 +19,11 @@ def test_context():
         filename = "a/b.py"
         (Path(temp_dir) / "a").mkdir()
         (Path(temp_dir) / filename).touch()
+        full_filename = str((Path(temp_dir) / filename))
 
-        manager = FullRepoManager(temp_dir, [filename], [FullyQualifiedNameProvider])
+        manager = FullRepoManager(temp_dir, [full_filename], [FullyQualifiedNameProvider])
         context = CodemodContext(
-            filename=filename, full_module_name="a.b", metadata_manager=manager
+            filename=full_filename, full_module_name="a.b", metadata_manager=manager
         )
         yield context
 
