@@ -64,7 +64,7 @@ def to_file(
         raise FileNotFoundError(f"File {path} does not exist.")
     if should_create:
         make_py_file(path)
-    return path
+    return path.resolve()
 
 
 def make_py_file(path: pathlib.Path) -> None:
