@@ -182,7 +182,7 @@ def get_absolute_module_for_import(
     context: CodemodContext, node: cst.ImportFrom
 ) -> str:
     full_module_name = context.full_module_name
-    if context.filename.endswith("__init__.py") and node.relative:  # type: ignore[union-attr]
+    if node.relative and context.filename.endswith("__init__.py"):  # type: ignore[union-attr]
         # The module `a.b` can refer to either `a/b.py` or `a/b/__init__.py`.
         # To correctly disambiguate relative imports from __init__ files, we
         # append an `.__init__` module.
